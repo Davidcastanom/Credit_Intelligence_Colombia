@@ -223,6 +223,47 @@ header {
     flex-grow: 1;
 }
 
+/* Sección informativa */
+.info-section {
+    padding: var(--space-8) var(--space-4);
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.info-section h2 {
+    font-size: var(--text-2xl);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-6);
+    text-align: center;
+}
+
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: var(--space-4);
+}
+
+.info-card {
+    padding: var(--space-6);
+    cursor: auto;
+}
+
+.info-card h3 {
+    color: var(--color-primary);
+    font-size: var(--text-base);
+    margin-bottom: var(--space-3);
+}
+
+.info-card p {
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    line-height: 1.7;
+}
+
+.info-card strong {
+    color: var(--color-text-primary);
+}
+
 /* Botones */
 .btn-primary, .btn-secondary, .btn-danger {
     height: 44px;
