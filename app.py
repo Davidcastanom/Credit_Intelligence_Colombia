@@ -68,7 +68,6 @@ app.config.update(
 # ---------------------------------------------------------------
 # INICIALIZAR BASE DE DATOS AL ARRANCAR
 # ---------------------------------------------------------------
-os.makedirs("database", exist_ok=True)
 ejecutar_migraciones()
 
 # ---------------------------------------------------------------
@@ -186,28 +185,6 @@ SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
 SMTP_USER = os.environ.get("SMTP_USER", "")
 SMTP_PASS = os.environ.get("SMTP_PASS", "")
 SMTP_FROM = os.environ.get("SMTP_FROM", "notificaciones@creditintelligence.co")
-
-# ============================================
-# ADMIN AUTH
-# ============================================
-
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        if not session.get("admin_logged_in"):
-            return redirect(url_for("admin_login"))
-        return f(*args, **kwargs)
-    return decorated
-
-@app.route("/admin/login", methods=["GET", "POST"])
-def admin_login():
-    error = None
-    if request.method == "POST":
-        if request.form.get("password") == ADMIN_PASSWORD:
-            session["admin_logged_in"] = True
-            return redirect(url_for("admin_dashboard"))
-        error = "Contraseña incorrecta"
-    return render_template("admin/login.html", error=error)
 
 @app.route("/admin/logout")
 def admin_logout():

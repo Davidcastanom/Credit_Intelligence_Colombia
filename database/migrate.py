@@ -103,6 +103,18 @@ def ejecutar_migraciones(ruta_db=None):
     for idx, sql in enumerate(MIGRATIONS):
         if idx <= ultima:
             continue
+        # Saltar migraciones de datos si la tabla fuente no existe
+        if idx == 7:
+            cursor.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='indicadores'"
+            )
+            if cursor.fetchone()[0] == 0:
+                print(f"  [SKIP] Migración {idx}: tabla 'indicadores' no existe (BD nueva).")
+                cursor.execute(
+                    "INSERT INTO schema_migrations (migration_index) VALUES (?)",
+                    (idx,)
+                )
+                continue
         try:
             cursor.execute(sql)
             cursor.execute(
