@@ -163,18 +163,86 @@ let modalidadSeleccionada = 'tasa_usura_consumo';
 
 function exportarAmortizacion() {
     if (ultimaTablaAmortizacion.length === 0) return;
+    const SEP = ";";
+    const DEC = ",";
     const monto = document.getElementById('monto').value;
     const tasa = document.getElementById('tasa_ea').value;
     const plazo = document.getElementById('plazo').value;
-    const columnas = [
-        { campo: "mes", titulo: "Mes" },
-        { campo: "cuota", titulo: "Cuota Fija" },
-        { campo: "interes", titulo: "Intereses" },
-        { campo: "capital", titulo: "Abono Capital" },
-        { campo: "saldo", titulo: "Saldo Pendiente" }
-    ];
-    descargarCSV(ultimaTablaAmortizacion, columnas,
-        `amortizacion_${monto}_${tasa}_${plazo}meses`);
+    const cuotaEl = document.getElementById('res-cuota');
+    const interesEl = document.getElementById('res-total-interes');
+    const tasaMVEl = document.getElementById('res-tasa-mv');
+
+    const cuota = cuotaEl ? cuotaEl.textContent : '';
+    const totalInteres = interesEl ? interesEl.textContent : '';
+    const tasaMV = tasaMVEl ? tasaMVEl.textContent : '';
+
+    let usuraTexto = 'No disponible';
+    try {
+        const alertaEl = document.getElementById('usura-alerta');
+        if (alertaEl) {
+            const match = alertaEl.textContent.match(/(\d+[.,]\d+)%/);
+            if (match) usuraTexto = match[0];
+        }
+    } catch(e) {}
+
+    function esc(val) {
+        const s = String(val);
+        if (s.includes(SEP) || s.includes('"') || s.includes('\n')) {
+            return '"' + s.replace(/"/g, '""') + '"';
+        }
+        return s;
+    }
+
+    function num(n) {
+        return String(n).replace('.', DEC);
+    }
+
+    const lines = [];
+    lines.push('CREDIT INTELLIGENCE COLOMBIA');
+    lines.push('SIMULACI\u00d3N DE CR\u00c9DITO - SISTEMA FRANC\u00c9S (CUOTA FIJA)');
+    lines.push('');
+    lines.push('DATOS DEL CR\u00c9DITO');
+    lines.push('Monto' + SEP + esc('$ ' + Number(monto).toLocaleString('es-CO')));
+    lines.push('Tasa E.A.' + SEP + esc(tasa + '%'));
+    lines.push('Tasa M.V.' + SEP + esc(tasaMV));
+    lines.push('Plazo' + SEP + esc(plazo + ' meses'));
+    lines.push('Cuota Mensual' + SEP + esc(cuota));
+    lines.push('Total Intereses' + SEP + esc(totalInteres));
+    lines.push('L\u00edmite Usura Vigente' + SEP + esc(usuraTexto));
+    lines.push('');
+    lines.push('');
+    lines.push('TABLA DE AMORTIZACI\u00d3N');
+    lines.push('Mes' + SEP + 'Cuota Fija' + SEP + 'Intereses' + SEP + 'Abono Capital' + SEP + 'Saldo Pendiente');
+
+    ultimaTablaAmortizacion.forEach(row => {
+        lines.push(
+            row.mes + SEP +
+            esc(formatCOP(row.cuota)) + SEP +
+            esc(formatCOP(row.interes)) + SEP +
+            esc(formatCOP(row.capital)) + SEP +
+            esc(formatCOP(row.saldo))
+        );
+    });
+
+    lines.push('');
+    // Totales
+    const totalCuota = ultimaTablaAmortizacion.reduce((s, r) => s + r.cuota, 0);
+    const totalInteresCalc = ultimaTablaAmortizacion.reduce((s, r) => s + r.interes, 0);
+    const totalCapitalCalc = ultimaTablaAmortizacion.reduce((s, r) => s + r.capital, 0);
+    lines.push('TOTALES' + SEP + esc(formatCOP(totalCuota)) + SEP + esc(formatCOP(totalInteresCalc)) + SEP + esc(formatCOP(totalCapitalCalc)) + SEP + '');
+    lines.push('');
+    lines.push('Generado por Credit Intelligence Colombia - creditintelligencecolombia.onrender.com');
+    lines.push('Datos de tasas para fines ilustrativos y anal\u00edticos.');
+
+    const csv = '\uFEFF' + lines.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'simulacion_' + monto + '_' + tasa + '_' + plazo + 'meses.csv';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
 }
 
 async function inicializarCalculadora() {
