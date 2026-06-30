@@ -47,12 +47,12 @@ FUENTES_POR_BANCO_NIT = {
 # Fuente real: Superintendencia Financiera de Colombia - Certificado de Tasas de Interés
 USURA_RATES = {
     "tasa_usura_consumo_ordinario": 28.79,
-    "tasa_usura_bajo_monto": 62.10,
-    "tasa_usura_productivo_mayor_monto": 42.50,
-    "tasa_usura_productivo_rural": 42.50,
-    "tasa_usura_productivo_urbano": 42.50,
-    "tasa_usura_popular_productivo_rural": 62.10,
-    "tasa_usura_popular_productivo_urbano": 62.10,
+    "tasa_usura_bajo_monto": 37.45,
+    "tasa_usura_productivo_mayor_monto": 23.18,
+    "tasa_usura_productivo_rural": 33.21,
+    "tasa_usura_productivo_urbano": 50.12,
+    "tasa_usura_popular_productivo_rural": 30.30,
+    "tasa_usura_popular_productivo_urbano": 38.45,
     "tasa_usura_consumo": 28.79,
     "tasa_usura_microcredito": 42.50,
     "dtf_ea": 10.50,

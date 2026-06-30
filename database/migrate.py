@@ -78,6 +78,31 @@ MIGRATIONS = [
         created_at TEXT DEFAULT (datetime('now'))
     );
     """,
+    # 10. Histórico de usura para abril y mayo 2025 (base comparativa)
+    """
+    INSERT OR IGNORE INTO historico_indicadores (nombre, valor, fuente_id, fecha_consulta, fecha_vigencia_inicio, fecha_vigencia_fin)
+    VALUES
+        -- Abril 2025
+        ('tasa_usura_consumo_ordinario', 31.50, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        ('tasa_usura_bajo_monto',        68.00, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        ('tasa_usura_consumo',           31.50, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        ('tasa_usura_microcredito',      46.50, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        ('tasa_usura_productivo_mayor_monto', 46.50, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        ('tasa_usura_productivo_rural',  49.80, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        ('tasa_usura_productivo_urbano', 54.00, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        ('tasa_usura_popular_productivo_rural',  68.00, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        ('tasa_usura_popular_productivo_urbano', 42.50, 1, '2025-04-30', '2025-04-01', '2025-04-30'),
+        -- Mayo 2025
+        ('tasa_usura_consumo_ordinario', 30.20, 1, '2025-05-31', '2025-05-01', '2025-05-31'),
+        ('tasa_usura_bajo_monto',        65.50, 1, '2025-05-31', '2025-05-01', '2025-05-31'),
+        ('tasa_usura_consumo',           30.20, 1, '2025-05-31', '2025-05-01', '2025-05-31'),
+        ('tasa_usura_microcredito',      44.50, 1, '2025-05-31', '2025-05-01', '2025-05-31'),
+        ('tasa_usura_productivo_mayor_monto', 44.50, 1, '2025-05-31', '2025-05-01', '2025-05-31'),
+        ('tasa_usura_productivo_rural',  47.30, 1, '2025-05-31', '2025-05-01', '2025-05-31'),
+        ('tasa_usura_productivo_urbano', 52.00, 1, '2025-05-31', '2025-05-01', '2025-05-31'),
+        ('tasa_usura_popular_productivo_rural',  65.50, 1, '2025-05-31', '2025-05-01', '2025-05-31'),
+        ('tasa_usura_popular_productivo_urbano', 40.80, 1, '2025-05-31', '2025-05-01', '2025-05-31');
+    """,
 ]
 
 
@@ -111,6 +136,17 @@ def ejecutar_migraciones(ruta_db=None):
             )
             if cursor.fetchone()[0] == 0:
                 print(f"  [SKIP] Migración {idx}: tabla 'indicadores' no existe (BD nueva).")
+                cursor.execute(
+                    "INSERT INTO schema_migrations (migration_index) VALUES (?)",
+                    (idx,)
+                )
+                continue
+        if idx == 10:
+            cursor.execute(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='historico_indicadores'"
+            )
+            if cursor.fetchone()[0] == 0:
+                print(f"  [SKIP] Migración {idx}: tabla 'historico_indicadores' no existe (BD nueva).")
                 cursor.execute(
                     "INSERT INTO schema_migrations (migration_index) VALUES (?)",
                     (idx,)
@@ -255,6 +291,7 @@ def poblar_indicadores(ruta_db):
         ("tasa_usura_productivo_mayor_monto", 23.18, "2026-01-01", "2026-12-31"),
         ("tasa_usura_popular_productivo_urbano", 38.45, "2026-01-01", "2026-12-31"),
         ("tasa_usura_popular_productivo_rural", 30.30, "2026-01-01", "2026-12-31"),
+        ("dtf_ea", 10.50, "2026-01-01", "2026-12-31"),
     ]
     for nombre, valor, inicio, fin in indicadores:
         try:
@@ -262,11 +299,17 @@ def poblar_indicadores(ruta_db):
                 "INSERT INTO indicadores (nombre, valor, fuente_id, fecha_vigencia_inicio, fecha_vigencia_fin) VALUES (?,?,1,?,?)",
                 (nombre, valor, inicio, fin)
             )
+            # También al historial (fecha_consulta = inicio)
+            c.execute("""
+                INSERT OR IGNORE INTO historico_indicadores
+                    (nombre, valor, fuente_id, fecha_consulta, fecha_vigencia_inicio, fecha_vigencia_fin)
+                VALUES (?, ?, 1, ?, ?, ?)
+            """, (nombre, valor, inicio, inicio, fin))
         except Exception:
             pass
     conn.commit()
     conn.close()
-    print("  Indicadores de usura inicializados.")
+    print("  Indicadores de usura inicializados (incluye historial 2026).")
 
 
 if __name__ == "__main__":
