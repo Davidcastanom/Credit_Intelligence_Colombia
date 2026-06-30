@@ -9,6 +9,7 @@ from email.mime.text import MIMEText
 from functools import wraps
 from pathlib import Path
 from flask import Flask, render_template, jsonify, request, session, redirect, url_for
+from database.migrate import ejecutar_migraciones
 from database.db import (
     obtener_tasas_comparativa,
     obtener_indicadores,
@@ -63,6 +64,12 @@ app.config.update(
     SESSION_COOKIE_SECURE=os.environ.get("RENDER", "") == "true",
     PERMANENT_SESSION_LIFETIME=3600,  # 1 hora
 )
+
+# ---------------------------------------------------------------
+# INICIALIZAR BASE DE DATOS AL ARRANCAR
+# ---------------------------------------------------------------
+os.makedirs("database", exist_ok=True)
+ejecutar_migraciones()
 
 # ---------------------------------------------------------------
 # RATE LIMITING (anti fuerza bruta)
