@@ -1,72 +1,125 @@
 # Credit Intelligence Colombia
 
-Sistema de consulta, comparación y seguimiento histórico de tasas de interés bancarias y de usura en Colombia.
+Sistema de consulta, comparación, simulación y seguimiento de tasas de interés bancarias y usura en Colombia. Incluye alertas de proximidad al límite legal, dashboard interactivo con históricos, calculadora de crédito (sistema francés), y panel administrativo.
+
+**URL:** [https://credit-intelligence-colombia-1.onrender.com](https://credit-intelligence-colombia-1.onrender.com)
+
+---
 
 ## Características
 
-- Consulta tasas de interés de bancos, nubancos y cooperativas colombianas
-- Obtiene la tasa de usura vigente por modalidad de crédito (SFC)
-- Almacena todo en base de datos SQLite con historial completo
-- Compara automáticamente las mejores tasas
-- Genera simulaciones de crédito (sistema francés)
-- Alerta cuando una entidad se acerca al límite legal de usura
-- Muestra tendencias históricas en dashboard interactivo
-- API REST para consulta de tasas actuales e históricas
+- **Comparador de tasas** — Explora y filtra las tasas de más de 20 entidades financieras (bancos tradicionales, nubancos, cooperativas). Incluye tooltips informativos, columna de **Riesgo Usura** y toggle para mostrar/ocultar columnas.
+- **Calculadora de crédito (sistema francés)** — Simula cuotas fijas mensuales con tabla de amortización completa. Descarga CSV con resumen del crédito + desglose mes a mes. Alerta si la tasa supera o se acerca al límite de usura.
+- **Dashboard estadístico** — KPIs con contadores animados, gráfico de barras con gradientes y línea de usura, evolución histórica por banco, histórico de usura por modalidad, y tabla de alertas activas (críticas en rojo, preventivas en naranja).
+- **Alertas de usura** — Detecta automáticamente los productos cuya tasa está a menos de 1 % (crítica) o menos de 3 % (preventiva) del techo legal.
+- **Inicio educativo** — Explica qué es la usura, cómo se calcula, para quién es la herramienta, casos de uso prácticos y preguntas frecuentes con acordeón interactivo.
+- **Inicio de sesión con Google** — Opcional. Activado con la variable `GOOGLE_CLIENT_ID`. Oculta completamente la interfaz de login si no está configurada.
+- **Panel administrativo** — Protegido con contraseña (`ADMIN_PASSWORD`). Permite editar tasas de usura, gestionar usuarios, ver logs de sincronización y enviar notificaciones.
+- **ETL automatizado** — Extrae tasas bancarias e indicadores de usura. Ejecutable manualmente, vía GitHub Actions (programación mensual), o mediante cron/Task Scheduler.
+- **Exportación CSV** — Compatible con Excel (locale español: separador `;`, decimal `,`). Descarga simulaciones con resumen completo y tablas de amortización. Descarga históricos de tasas y usura desde el dashboard.
+- **Diseño responsive** — Menú hamburguesa en mobile, tablas adaptativas (ocultan columnas secundarias), KPIs en grilla de 2 columnas, gráficos compactos.
+
+---
 
 ## Stack
 
-- **Backend**: Flask (Python 3), SQLite
-- **Frontend**: HTML + CSS + JavaScript vanilla, Chart.js
-- **ETL**: Pandas, Requests, BeautifulSoup4
+| Capa | Tecnología |
+|------|-----------|
+| Backend | Flask (Python 3), SQLite |
+| Frontend | HTML + CSS vanilla + JavaScript, Chart.js |
+| ETL | Pandas, Requests, pdfplumber |
+| Auth | Google OAuth 2.0 (opcional) |
+| Despliegue | Render (free tier), Gunicorn |
 
-## Instalación
+---
+
+## Instalación local
 
 ```bash
 python -m venv venv
-venv\Scripts\activate      # Windows
+venv\Scripts\activate          # Windows
+# ó: source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
-python init_db.py           # Crear BD con datos semilla
-python app.py               # Iniciar servidor en :5000
+python database/migrate.py      # Crea esquema + datos semilla (52 productos, 7 indicadores)
+python app.py                   # Servidor en http://localhost:5000
 ```
+
+### Variables de entorno (`.env`)
+
+| Variable | Obligatoria | Descripción |
+|----------|-------------|-------------|
+| `FLASK_SECRET_KEY` | Sí | Secreto de sesión Flask |
+| `ADMIN_PASSWORD` | No | Contraseña del panel admin. Si no se define, se genera una aleatoria mostrada al iniciar |
+| `GOOGLE_CLIENT_ID` | No | Client ID de Google OAuth. Si no se define, el login con Google se oculta por completo |
+
+---
 
 ## Estructura del proyecto
 
 ```
-├── app.py                      # Servidor Flask + API REST
-├── init_db.py                  # Crear BD inicial desde schema.sql
+├── app.py                         # Servidor Flask + API REST + admin + OAuth
+├── Procfile                       # Comando de inicio para Render
+├── requirements.txt               # Dependencias
+├── .env.example                   # Plantilla de variables de entorno
 ├── database/
-│   ├── schema.sql              # DDL completo + datos semilla
-│   ├── migrate.py              # Migraciones automáticas del esquema
-│   ├── db.py                   # Funciones de consulta a la BD
-│   ├── etl_scraper.py          # Pipeline ETL (tasas bancarias + usura)
-│   └── tasas.db                # Base de datos SQLite
+│   ├── db.py                      # Consultas a la BD
+│   ├── migrate.py                 # Migraciones automáticas (9 versiones)
+│   └── etl_scraper.py             # Pipeline ETL (tasas bancarias + usura PDF)
 ├── scripts/
-│   └── run_etl.py              # CLI para ejecutar ETL manualmente
+│   └── run_etl.py                 # CLI para ejecutar ETL manualmente
 ├── scripts_admin/
-│   ├── ver_tablas.py           # Ver estructura de todas las tablas
-│   └── ver_datos.py            # Ver contenido de todas las tablas
+│   ├── ver_tablas.py              # Inspeccionar estructura de tablas
+│   └── ver_datos.py               # Inspeccionar contenido de tablas
 ├── static/
 │   ├── css/style.css
 │   ├── js/main.js
+│   ├── favicon.svg / favicon.png / favicon.ico
 │   └── img/
-└── templates/
-    ├── index.html
-    ├── comparar.html
-    ├── calculadora.html
-    └── dashboard.html
+├── templates/
+│   ├── index.html                 # Inicio educativo + FAQ + casos de uso
+│   ├── comparar.html              # Comparador de tasas
+│   ├── calculadora.html           # Simulador de crédito
+│   ├── dashboard.html             # Dashboard con gráficos y alertas
+│   └── admin/
+│       ├── login.html             # Login del panel admin
+│       ├── dashboard.html         # Admin dashboard
+│       ├── usura.html             # Editor de tasas de usura
+│       └── notificar.html         # Envío de notificaciones
+└── .github/workflows/
+    └── etl.yml                    # ETL automático mensual
 ```
+
+---
+
+## Páginas principales
+
+| Ruta | Descripción |
+|------|-------------|
+| `/` | Inicio con hero, características, segmentos de audiencia, FAQ, explicación de usura |
+| `/comparar` | Tabla interactiva de tasas con filtros, ordenamiento, tooltips y toggle de columnas |
+| `/calculadora` | Simulador de crédito (sistema francés) con tabla de amortización y exportación CSV |
+| `/dashboard` | KPIs animados, gráficos (barras con línea de usura, históricos), alertas de riesgo |
+| `/admin/login` | Acceso al panel administrativo (requiere `ADMIN_PASSWORD`) |
+| `/api/tasas` | API REST — tasas vigentes |
+| `/api/indicadores` | API REST — indicadores de mercado (usura, DTF) |
+| `/api/amortizacion?monto=X&tasa_ea=Y&plazo=Z` | API REST — simulación de crédito |
+
+---
 
 ## API REST
 
 | Endpoint | Método | Descripción |
 |----------|--------|-------------|
-| `/api/tasas` | GET | Tasas vigentes de todos los productos |
-| `/api/indicadores` | GET | Indicadores de mercado (usura, DTF) |
+| `/api/tasas` | GET | Tasas vigentes de todos los productos financieros |
+| `/api/indicadores` | GET | Indicadores de mercado (tasas de usura por modalidad) |
 | `/api/historial` | GET | Historial de tasas bancarias |
 | `/api/historial/usura` | GET | Historial de tasas de usura e indicadores |
-| `/api/amortizacion` | GET/POST | Simulación de crédito (sistema francés) |
+| `/api/amortizacion?monto=X&tasa_ea=Y&plazo=Z` | GET | Simulación de crédito (sistema francés) |
+| `/api/sync/status` | GET | Estado de la última sincronización ETL |
 
-## Pipeline ETL
+---
+
+## ETL — Pipeline de datos
 
 ### Ejecución manual
 
@@ -74,85 +127,41 @@ python app.py               # Iniciar servidor en :5000
 python scripts/run_etl.py
 ```
 
-### Programación automática (schedulers)
+### Automatización
 
-**Windows (Task Scheduler):**
-```
-Acción: Iniciar programa
-Programa: python
-Argumentos: C:\ruta\proyecto\scripts\run_etl.py
-Directorio: C:\ruta\proyecto
-Frecuencia: Diaria a las 6:00
-```
-
-**Linux (cron):**
-```
-0 6 * * * cd /ruta/proyecto && python scripts/run_etl.py
-```
-
-**GitHub Actions (`.github/workflows/etl.yml`):**
+**GitHub Actions** (`.github/workflows/etl.yml`):
 ```yaml
-name: ETL Diario
+name: ETL Mensual
 on:
   schedule:
-    - cron: '0 6 * * *'
-  workflow_dispatch:
-jobs:
-  etl:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.x'
-      - run: pip install -r requirements.txt
-      - run: python scripts/run_etl.py
+    - cron: '0 6 1 * *'   # 1er día de cada mes
+  workflow_dispatch:        # también manual
 ```
 
-**Celery Beat:**
-```python
-from celery import Celery
-from database.etl_scraper import correr_etl
+### ¿Qué hace?
 
-app = Celery('credit_intelligence', broker='redis://localhost')
-
-@app.on_after_configure.connect
-def setup_periodic_tasks(sender, **kwargs):
-    sender.add_periodic_task(86400.0, correr_etl.s(), name='etl-diario')
-```
-
-### ¿Qué hace el ETL?
-
-1. **Tasas bancarias**: Extrae tasas de los productos financieros, las valida (rango 0-100% EA, datos numéricos, sin duplicados), calcula tasa MV, actualiza la tabla `tasas` (vigentes) e inserta en `historico_tasas`.
-2. **Tasas de usura**: Extrae indicadores de usura por modalidad de crédito desde la Superintendencia Financiera de Colombia, actualiza `indicadores` (vigentes) e inserta en `historico_indicadores`.
-3. **Logs**: Cada ejecución queda registrada en `sync_logs` con estado, fecha y detalles.
+1. **Tasas bancarias** — Extrae, valida (rango 0–100 % EA, datos numéricos, sin duplicados) y actualiza tasas vigentes + histórico.
+2. **Tasas de usura** — Descarga el certificado PDF de la SFC (o usa valores simulados como fallback), extrae tasas por modalidad y las guarda con fechas de vigencia.
+3. **Logs** — Cada ejecución se registra en `sync_logs` con estado, fecha, cantidad de registros y detalles.
 
 ### Validaciones de calidad
 
-- Tasas numéricas mayores a 0 y menores a 100% EA
-- NIT de banco debe existir en la tabla `bancos`
-- Producto debe existir para el banco correspondiente
-- No duplicados históricos: mismo producto + misma fecha no se inserta dos veces
-- No duplicados de usura: mismo indicador + misma vigencia no se inserta dos veces
-- Errores registrados en `sync_logs` sin romper la aplicación
+- Tasas numéricas entre 0 y 100 % EA
+- NIT de banco debe existir en `bancos`
+- Producto debe pertenecer al banco
+- Sin duplicados históricos (mismo producto + fecha)
+- Sin duplicados de usura (mismo indicador + vigencia)
+- Errores registrados sin romper la aplicación
 
-### Verificar que funcionó
+### Verificar estado
 
 ```bash
-# Consultar logs de sincronización
-python -c "import sqlite3; conn = sqlite3.connect('database/tasas.db'); [print(r) for r in conn.execute('SELECT fecha_ejecucion, estado, registros_procesados, detalles FROM sync_logs ORDER BY fecha_ejecucion DESC LIMIT 5')]"
-
-# Consultar histórico de tasas
-python -c "import sqlite3; conn = sqlite3.connect('database/tasas.db'); [print(r) for r in conn.execute('SELECT fecha_registro, COUNT(*) FROM historico_tasas GROUP BY fecha_registro ORDER BY fecha_registro DESC LIMIT 10')]"
-
-# Consultar histórico de usura
-python -c "import sqlite3; conn = sqlite3.connect('database/tasas.db'); [print(r) for r in conn.execute('SELECT fecha_consulta, nombre, valor FROM historico_indicadores ORDER BY fecha_consulta DESC LIMIT 10')]"
-
-# Ver estado desde la API
-curl http://localhost:5000/api/historial/usura
+curl https://credit-intelligence-colombia-1.onrender.com/api/sync/status
 ```
 
-## Base de datos
+---
+
+## Base de datos (SQLite)
 
 ### Tablas
 
@@ -160,19 +169,52 @@ curl http://localhost:5000/api/historial/usura
 |-------|-----------|
 | `bancos` | Entidades financieras (23 registros) |
 | `categorias_credito` | Modalidades de crédito SFC (12 registros) |
-| `fuentes` | Fuentes oficiales de cada entidad (24 registros) |
-| `productos` | Productos financieros por banco (24 registros) |
+| `fuentes` | Fuentes oficiales de cada entidad |
+| `productos` | Productos financieros por banco (52 registros) |
 | `tasas` | Tasas vigentes (1 por producto) |
 | `historico_tasas` | Historial de tasas bancarias con fecha |
 | `indicadores` | Tasas de usura e indicadores vigentes |
 | `historico_indicadores` | Historial de usura con fecha de consulta |
 | `sync_logs` | Registro de ejecuciones ETL |
-| `schema_migrations` | Control de versiones del esquema |
+| `schema_migrations` | Control de versiones del esquema (9 migraciones) |
+| `usuarios` | Usuarios registrados vía Google OAuth |
+| `notificaciones` | Notificaciones enviadas a usuarios |
 
-### Scripts de administración
+### Nota sobre persistencia
+
+En Render (free tier), la base de datos SQLite **no persiste** entre reinicios. El archivo `database/tasas.db` se regenera desde cero en cada deploy. Las migraciones re-siembran productos (52) e indicadores (7) automáticamente al iniciar.
+
+---
+
+## Despliegue en Render
+
+1. Crear servicio Web en Render
+2. **Build Command:** `pip install -r requirements.txt`
+3. **Start Command:** `gunicorn app:app`
+4. **Variables de entorno:**
+   - `FLASK_SECRET_KEY`
+   - `ADMIN_PASSWORD` (opcional)
+   - `GOOGLE_CLIENT_ID` (opcional)
+5. Tras el deploy, ejecutar ETL manual desde Render Shell:
+   ```bash
+   python scripts/run_etl.py
+   ```
+
+> **Nota:** La URL actual es `credit-intelligence-colombia-1.onrender.com`. Render free tier duerme tras 15 min de inactividad — la primera visita tarda 5–15 s en despertar.
+
+---
+
+## Scripts de administración
 
 ```bash
-python scripts_admin/ver_tablas.py   # Ver estructura de todas las tablas
-python scripts_admin/ver_datos.py    # Ver contenido de todas las tablas
-python scripts/run_etl.py            # Ejecutar ETL manualmente
+python database/migrate.py          # Ejecutar migraciones pendientes
+python scripts/run_etl.py           # Ejecutar ETL manual
+python scripts_admin/ver_tablas.py  # Ver estructura de tablas
+python scripts_admin/ver_datos.py   # Ver contenido de tablas
 ```
+
+---
+
+## Licencia
+
+Datos de tasas con fines ilustrativos y analíticos. Fuente oficial: [Superintendencia Financiera de Colombia](https://www.superfinanciera.gov.co/publicaciones/10115837/seguimiento-a-la-tibc/).
