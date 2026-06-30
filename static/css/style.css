@@ -263,6 +263,170 @@ header {
     color: var(--color-text);
 }
 
+/* FAQ */
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.faq-item {
+    padding: var(--space-4) var(--space-5);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.faq-question {
+    font-weight: 600;
+    color: var(--color-text);
+    font-size: var(--text-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.faq-toggle {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    transition: transform 0.2s;
+}
+
+.faq-item.open .faq-toggle {
+    transform: rotate(45deg);
+}
+
+.faq-answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s, padding 0.3s, opacity 0.3s;
+    opacity: 0;
+    padding: 0;
+    color: var(--color-text-secondary);
+    font-size: var(--text-sm);
+    line-height: 1.7;
+}
+
+.faq-item.open .faq-answer {
+    max-height: 300px;
+    padding-top: var(--space-3);
+    opacity: 1;
+}
+
+@media (max-width: 768px) {
+    .faq-question {
+        font-size: var(--text-xs);
+    }
+    .faq-answer {
+        font-size: var(--text-xs);
+    }
+}
+
+/* Steps guide */
+.steps-guide {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-5);
+    font-size: var(--text-sm);
+    color: var(--color-text-secondary);
+    flex-wrap: wrap;
+}
+
+.steps-guide strong {
+    color: var(--color-text);
+}
+
+.step-arrow {
+    color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* Column visibility toggle */
+.col-toggle-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: var(--space-4);
+    align-items: center;
+}
+
+.col-toggle-label {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    font-weight: 600;
+    margin-right: var(--space-1);
+}
+
+.col-toggle {
+    font-size: 0.7rem;
+    padding: 2px 10px;
+    border-radius: 12px;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.col-toggle.active {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
+
+.col-toggle:hover {
+    opacity: 0.8;
+}
+
+.hidden-col {
+    display: none !important;
+}
+
+@media (max-width: 768px) {
+    .col-toggle-bar {
+        justify-content: center;
+    }
+    .col-toggle {
+        font-size: 0.6rem;
+        padding: 1px 7px;
+    }
+}
+
+/* Alert row colors */
+tr.alerta-critica {
+    background: rgba(220, 38, 38, 0.06) !important;
+}
+tr.alerta-critica:hover {
+    background: rgba(220, 38, 38, 0.10) !important;
+}
+tr.alerta-preventiva {
+    background: rgba(217, 119, 6, 0.04) !important;
+}
+tr.alerta-preventiva:hover {
+    background: rgba(217, 119, 6, 0.08) !important;
+}
+
+/* Tooltips */
+.tooltip-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--color-border);
+    color: var(--color-text-secondary);
+    font-size: 10px;
+    font-weight: 700;
+    cursor: help;
+    vertical-align: middle;
+    margin-left: 2px;
+}
+
 /* Botones */
 .btn-primary, .btn-secondary, .btn-danger {
     height: 44px;

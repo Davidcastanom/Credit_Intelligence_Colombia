@@ -42,7 +42,14 @@
 
         <section class="glass-panel">
             <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Comparación de Tasas Vigentes</h2>
-            <p style="color: var(--color-text-muted); margin-bottom: 2rem;">Filtre y ordene para encontrar la mejor alternativa del mercado financiero colombiano.</p>
+            <p style="color: var(--color-text-secondary); margin-bottom: 0.5rem;">Filtre y ordene para encontrar la mejor alternativa del mercado financiero colombiano.</p>
+            <div class="steps-guide">
+                <span><strong>Paso 1:</strong> Filtrá por categoría</span>
+                <span class="step-arrow">→</span>
+                <span><strong>Paso 2:</strong> Ordená de menor a mayor tasa</span>
+                <span class="step-arrow">→</span>
+                <span><strong>Paso 3:</strong> Revisá el riesgo de usura <span class="badge badge-danger" style="font-size:0.65rem;padding:1px 6px;vertical-align:middle;">Alto</span> <span class="badge badge-warning" style="font-size:0.65rem;padding:1px 6px;vertical-align:middle;">Medio</span></span>
+            </div>
 
             <div class="controls-row">
                 <input type="text" id="buscar" class="search-input" placeholder="Buscar por banco o producto...">
@@ -76,6 +83,19 @@
                 </select>
             </div>
 
+            <div class="col-toggle-bar">
+                <span class="col-toggle-label">Columnas:</span>
+                <button class="col-toggle active" data-col="1" onclick="toggleCol(1)">Banco</button>
+                <button class="col-toggle active" data-col="2" onclick="toggleCol(2)">Tipo</button>
+                <button class="col-toggle active" data-col="3" onclick="toggleCol(3)">Producto</button>
+                <button class="col-toggle active" data-col="4" onclick="toggleCol(4)">Categoría</button>
+                <button class="col-toggle active" data-col="5" onclick="toggleCol(5)">Tasa E.A.</button>
+                <button class="col-toggle active" data-col="6" onclick="toggleCol(6)">Tasa M.V.</button>
+                <button class="col-toggle active" data-col="7" onclick="toggleCol(7)">Riesgo</button>
+                <button class="col-toggle active" data-col="8" onclick="toggleCol(8)">Fecha</button>
+                <button class="col-toggle active" data-col="9" onclick="toggleCol(9)">Fuente</button>
+            </div>
+
             <div class="table-responsive">
                 <table class="custom-table" id="tabla-tasas">
                     <thead>
@@ -84,9 +104,9 @@
                             <th>Tipo Entidad</th>
                             <th>Producto</th>
                             <th>Categoría</th>
-                            <th>Tasa E.A.</th>
-                            <th>Tasa M.V.</th>
-                            <th>Riesgo Usura</th>
+                            <th>Tasa E.A. <span class="tooltip-icon" title="Tasa Efectiva Anual: interés real del crédito incluyendo capitalización. A mayor valor, más caro es el producto.">ⓘ</span></th>
+                            <th>Tasa M.V. <span class="tooltip-icon" title="Tasa Mensual Vencida: interés que se paga cada mes. Se calcula a partir de la Tasa E.A.">ⓘ</span></th>
+                            <th>Riesgo Usura <span class="tooltip-icon" title="Distancia entre la tasa del producto y el límite legal de usura. Si está a menos de 1% es crítica; a menos de 3% es preventiva.">ⓘ</span></th>
                             <th>Actualización</th>
                             <th>Fuente</th>
                         </tr>

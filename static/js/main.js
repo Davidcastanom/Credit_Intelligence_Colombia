@@ -474,6 +474,7 @@ function renderizarAlertas(tasas, indicadores) {
         }
 
         const tr = document.createElement('tr');
+        tr.className = a.distancia <= 1.0 ? 'alerta-critica' : 'alerta-preventiva';
         tr.innerHTML = `
             <td><span class="badge ${badgeClase}">${icono} ${gravedad}</span></td>
             <td style="font-weight:600;">${a.banco}</td>
@@ -947,3 +948,16 @@ function inicializarMenu() {
 }
 
 document.addEventListener('DOMContentLoaded', inicializarMenu);
+
+// Alternar visibilidad de columnas en tabla comparativa
+function toggleCol(n) {
+    const table = document.getElementById('tabla-tasas');
+    if (!table) return;
+    const btns = document.querySelectorAll('.col-toggle[data-col="' + n + '"]');
+    const ths = table.querySelectorAll('thead tr th:nth-child(' + n + ')');
+    const tds = table.querySelectorAll('tbody tr td:nth-child(' + n + ')');
+
+    ths.forEach(el => el.classList.toggle('hidden-col'));
+    tds.forEach(el => el.classList.toggle('hidden-col'));
+    btns.forEach(el => el.classList.toggle('active'));
+}
