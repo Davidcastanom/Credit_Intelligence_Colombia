@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin - Tasas de Usura</title>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #0b1421; color: #fff; min-height: 100vh; display: flex; }
+nav { width: 240px; background: rgba(255,255,255,0.03); border-right: 1px solid rgba(255,255,255,0.06); padding: 24px 0; flex-shrink: 0; }
+nav h2 { color: rgba(255,255,255,0.4); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0 20px; margin-bottom: 16px; }
+nav a { display: block; padding: 10px 20px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; }
+nav a:hover, nav a.active { background: rgba(59,130,246,0.1); color: #60a5fa; }
+nav a.logout { margin-top: 40px; color: rgba(239,68,68,0.6); }
+nav a.logout:hover { color: #ef4444; background: rgba(239,68,68,0.05); }
+main { flex: 1; padding: 32px 40px; min-width: 0; }
+h1 { font-size: 1.5rem; margin-bottom: 4px; }
+.subtitle { color: rgba(255,255,255,0.5); margin-bottom: 24px; font-size: 0.9rem; }
+.guide { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.15); border-radius: 10px; padding: 16px 20px; margin-bottom: 24px; font-size: 0.85rem; line-height: 1.5; color: rgba(255,255,255,0.75); }
+.guide strong { color: #60a5fa; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; padding: 10px 12px; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.4); border-bottom: 1px solid rgba(255,255,255,0.06); }
+td { padding: 10px 12px; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 0.9rem; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+.editable { cursor: pointer; color: #60a5fa; }
+.editable:hover { text-decoration: underline; }
+.inline-edit { display: flex; gap: 6px; align-items: center; }
+.inline-edit input { width: 90px; padding: 4px 8px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05); color: #fff; font-size: 0.85rem; }
+.inline-edit button { padding: 4px 10px; border-radius: 6px; border: none; font-size: 0.8rem; cursor: pointer; }
+.btn-save { background: #22c55e; color: #fff; }
+.btn-save:hover { background: #16a34a; }
+.btn-cancel { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.6); }
+.btn-cancel:hover { background: rgba(255,255,255,0.15); }
+.msg { display: none; position: fixed; bottom: 24px; right: 24px; background: #22c55e; color: #fff; padding: 12px 20px; border-radius: 8px; font-size: 0.85rem; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+</style>
+</head>
+<body>
+<nav>
+<h2>Admin</h2>
+<a href="{{ url_for('admin_dashboard') }}">Panel de Control</a>
+<a href="{{ url_for('admin_usura') }}" class="active">Tasas de Usura</a>
+<a href="{{ url_for('dashboard') }}" target="_blank">Dashboard Público</a>
+<a href="{{ url_for('admin_logout') }}" class="logout">Cerrar Sesión</a>
+</nav>
+<main>
+<h1>Tasas de Usura</h1>
+<p class="subtitle">Gestión manual de las tasas de usura vigentes. Los cambios se registran automáticamente en el histórico.</p>
+
+<div class="guide">
+<strong> Frecuencia recomendada:</strong> La SFC (Superintendencia Financiera de Colombia) publica el certificado de tasas de interés <strong>mensualmente</strong>, generalmente durante la primera semana de cada mes. Se recomienda actualizar estos valores apenas se publique el nuevo certificado.<br><br>
+<strong> Fuente oficial:</strong> <a href="https://www.superfinanciera.gov.co/publicaciones/10115837/tasas-de-interes-21199/" target="_blank" style="color:#60a5fa;">Portal SFC  Tasas de Interés</a><br>
+<strong> Automatización:</strong> El sistema intenta descargar automáticamente el PDF del certificado al ejecutar el ETL vía <code>python scripts/run_etl.py</code>. Si la descarga falla (cambio de URL, formato, etc.), los valores actuales se conservan y puede actualizarlos manualmente aquí.
+</div>
+
+<table>
+<thead>
+<tr><th>Modalidad</th><th>Valor Actual (%)</th><th>Vigencia Desde</th><th>Vigencia Hasta</th><th>Acción</th></tr>
+</thead>
+<tbody>
+{% for ind in indicadores %}
+<tr data-id="{{ ind.id }}">
+<td>{{ ind.nombre }}</td>
+<td class="valor-cell">{{ "%.2f"|format(ind.valor) }}%</td>
+<td>{{ ind.fecha_vigencia_inicio or '--' }}</td>
+<td>{{ ind.fecha_vigencia_fin or '--' }}</td>
+<td><a href="#" class="editable" data-id="{{ ind.id }}" data-valor="{{ ind.valor }}">Editar</a></td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</main>
+
+<div id="msg" class="msg"></div>
+
+<script>
+document.querySelectorAll('.editable').forEach(function(link){
+  link.addEventListener('click', function(e){
+    e.preventDefault();
+    var tr = this.closest('tr');
+    var valCell = tr.querySelector('.valor-cell');
+    var currentVal = this.getAttribute('data-valor');
+    if (tr.querySelector('.inline-edit')) return;
+    valCell.innerHTML = '<div class="inline-edit">' +
+      '<input type="number" step="0.01" id="edit-val" value="' + currentVal + '">' +
+      '<button class="btn-save" id="save-btn">Guardar</button>' +
+      '<button class="btn-cancel" id="cancel-btn">Cancelar</button></div>';
+    var input = valCell.querySelector('#edit-val');
+    input.focus();
+    input.select();
+    valCell.querySelector('#save-btn').addEventListener('click', function(){
+      var newVal = valCell.querySelector('input').value;
+      if (!newVal || isNaN(newVal)) return;
+      fetch('/admin/usura', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({id: parseInt(tr.getAttribute('data-id')), valor: parseFloat(newVal)})
+      }).then(function(r){ return r.json(); }).then(function(resp){
+        if (resp.status === 'ok') {
+          valCell.innerHTML = parseFloat(newVal).toFixed(2) + '%';
+          link.setAttribute('data-valor', newVal);
+          mostrarMensaje('Valor actualizado correctamente');
+        } else {
+          alert('Error: ' + resp.mensaje);
+          valCell.innerHTML = parseFloat(currentVal).toFixed(2) + '%';
+        }
+      }).catch(function(err){
+        alert('Error de conexión');
+        valCell.innerHTML = parseFloat(currentVal).toFixed(2) + '%';
+      });
+    });
+    valCell.querySelector('#cancel-btn').addEventListener('click', function(){
+      valCell.innerHTML = parseFloat(currentVal).toFixed(2) + '%';
+    });
+  });
+});
+function mostrarMensaje(t) {
+  var m = document.getElementById('msg');
+  m.textContent = t; m.style.display = 'block';
+  setTimeout(function(){ m.style.display = 'none'; }, 3000);
+}
+</script>
+</body>
+</html>

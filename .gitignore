@@ -1,13 +1,26 @@
 # Entorno virtual
 venv/
+env/
+.Python
+
+# Variables de entorno (secretos)
+.env
 
 # Base de datos
 *.db
 
-# Sistema Windows
+# Sistema
 Thumbs.db
 desktop.ini
+.DS_Store
 
 # Python compilado
 __pycache__/
 *.pyc
+*.egg-info/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

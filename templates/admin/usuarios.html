@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin - Usuarios</title>
+
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Segoe UI',sans-serif; background:#0b1421; color:#fff; min-height:100vh; display:flex; }
+nav { width:240px; background:rgba(255,255,255,0.03); border-right:1px solid rgba(255,255,255,0.06); padding:24px 0; flex-shrink:0; }
+nav h2 { color:rgba(255,255,255,0.4); font-size:0.7rem; text-transform:uppercase; letter-spacing:0.08em; padding:0 20px; margin-bottom:16px; }
+nav a { display:block; padding:10px 20px; color:rgba(255,255,255,0.6); text-decoration:none; font-size:0.9rem; }
+nav a:hover, nav a.active { background:rgba(59,130,246,0.1); color:#60a5fa; }
+nav a.logout { margin-top:40px; color:rgba(239,68,68,0.6); }
+nav a.logout:hover { color:#ef4444; background:rgba(239,68,68,0.05); }
+main { flex:1; padding:32px 40px; min-width:0; }
+h1 { font-size:1.5rem; margin-bottom:4px; }
+.subtitle { color:rgba(255,255,255,0.5); margin-bottom:24px; font-size:0.9rem; }
+table { width:100%; border-collapse:collapse; }
+th { text-align:left; padding:10px 12px; font-size:0.75rem; text-transform:uppercase; letter-spacing:0.05em; color:rgba(255,255,255,0.4); border-bottom:1px solid rgba(255,255,255,0.06); }
+td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,0.04); font-size:0.85rem; }
+tr:hover td { background:rgba(255,255,255,0.02); }
+.avatar { width:28px; height:28px; border-radius:50%; vertical-align:middle; margin-right:8px; }
+.badge { padding:2px 8px; border-radius:4px; font-size:0.75rem; }
+.badge-success { background:rgba(34,197,94,0.15); color:#22c55e; }
+.badge-muted { background:rgba(255,255,255,0.05); color:rgba(255,255,255,0.4); }
+</style>
+</head>
+<body>
+<nav>
+<h2>Admin</h2>
+<a href="{{ url_for('admin_dashboard') }}">Panel de Control</a>
+<a href="{{ url_for('admin_usura') }}">Tasas de Usura</a>
+<a href="{{ url_for('admin_usuarios') }}" class="active">Usuarios</a>
+<a href="{{ url_for('admin_notificar') }}">Notificar</a>
+<a href="{{ url_for('dashboard') }}" target="_blank">Dashboard Público</a>
+<a href="{{ url_for('admin_logout') }}" class="logout">Cerrar Sesión</a>
+</nav>
+<main>
+<h1>Usuarios Registrados</h1>
+<p class="subtitle">{{ usuarios|length }} usuario(s) registrado(s) con Google.</p>
+<table>
+<thead><tr><th>Usuario</th><th>Email</th><th>Términos</th><th>Notificaciones</th><th>Registro</th><th>Último Acceso</th></tr></thead>
+<tbody>
+{% for u in usuarios %}
+<tr>
+<td>{% if u.avatar_url %}<img src="{{ u.avatar_url }}" class="avatar">{% endif %}{{ u.nombre }}</td>
+<td>{{ u.email }}</td>
+<td>{% if u.accepted_terms %}<span class="badge badge-success">Aceptó</span>{% else %}<span class="badge badge-muted">Pendiente</span>{% endif %}</td>
+<td>{% if u.notifications_enabled %}<span class="badge badge-success">Activadas</span>{% else %}<span class="badge badge-muted">Desactivadas</span>{% endif %}</td>
+<td>{{ u.created_at }}</td>
+<td>{{ u.last_login }}</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</main>
+</body>
+</html>

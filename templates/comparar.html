@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comparador de Tasas - Credit Intelligence</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="brand" onclick="location.href='/'">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
+                <span class="brand-name">Credit Intelligence</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/" class="nav-btn">Inicio</a>
+                <a href="/comparar" class="nav-btn active">Comparar Tasas</a>
+                <a href="/calculadora" class="nav-btn">Calculadora</a>
+                <a href="/dashboard" class="nav-btn">Estadísticas</a>
+            </nav>
+            <div class="user-area" id="user-area">
+                {% if google_client_id %}
+                <div id="g_id_onload" data-client_id="{{ google_client_id }}" data-context="signin" data-ux_mode="popup" data-callback="handleGoogleCredential" data-auto_prompt="false"></div>
+                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="medium" data-logo_alignment="left"></div>
+                {% endif %}
+                <div class="user-menu" id="user-menu" style="display:none;">
+                    <img id="user-avatar" class="user-avatar" src="" alt="">
+                    <span id="user-name-display" class="user-name"></span>
+                    <a href="#" id="btn-logout" class="nav-btn" onclick="handleLogout();return false;">Salir</a>
+                </div>
+            </div>
+        </header>
+
+        <section class="glass-panel">
+            <h2 style="font-size: 2rem; font-weight: 800; margin-bottom: 0.5rem;">Comparación de Tasas Vigentes</h2>
+            <p style="color: var(--color-text-muted); margin-bottom: 2rem;">Filtre y ordene para encontrar la mejor alternativa del mercado financiero colombiano.</p>
+
+            <div class="controls-row">
+                <input type="text" id="buscar" class="search-input" placeholder="Buscar por banco o producto...">
+                
+                <select id="filtro-categoria" class="select-input">
+                    <option value="todas">Todas las categorías</option>
+                    <option value="Consumo">Consumo</option>
+                    <option value="Bajo Monto">Bajo Monto</option>
+                    <option value="Vivienda">Vivienda</option>
+                    <option value="Microcredito">Microcrédito</option>
+                    <option value="Libranza">Libranza</option>
+                    <option value="Vehiculo">Vehículo</option>
+                    <option value="Comercial">Comercial</option>
+                    <option value="Productivo Mayor Monto">Productivo Mayor Monto</option>
+                    <option value="Productivo Rural">Productivo Rural</option>
+                    <option value="Productivo Urbano">Productivo Urbano</option>
+                    <option value="Popular Productivo Rural">Popular Productivo Rural</option>
+                    <option value="Popular Productivo Urbano">Popular Productivo Urbano</option>
+                </select>
+
+                <select id="filtro-tipo-entidad" class="select-input">
+                    <option value="todas">Todas las entidades</option>
+                    <option value="Banco tradicional">Banco tradicional</option>
+                    <option value="Nubanco">Nubanco</option>
+                    <option value="Cooperativa">Cooperativa</option>
+                </select>
+
+                <select id="orden-tasa" class="select-input">
+                    <option value="asc">Tasa: Menor a Mayor</option>
+                    <option value="desc">Tasa: Mayor a Menor</option>
+                </select>
+            </div>
+
+            <div class="table-responsive">
+                <table class="custom-table" id="tabla-tasas">
+                    <thead>
+                        <tr>
+                            <th>Banco</th>
+                            <th>Tipo Entidad</th>
+                            <th>Producto</th>
+                            <th>Categoría</th>
+                            <th>Tasa E.A.</th>
+                            <th>Tasa M.V.</th>
+                            <th>Riesgo Usura</th>
+                            <th>Actualización</th>
+                            <th>Fuente</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body">
+                        <!-- Generado dinámicamente por JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <footer>
+            <p>&copy; 2026 Credit Intelligence Colombia. Tasas obtenidas mediante APIs y scrapers oficiales.</p>
+        </footer>
+    </div>
+
+    <div class="modal-overlay" id="terms-modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Términos y Condiciones</h2>
+            <p>Al registrarte, aceptas recibir notificaciones sobre actualizaciones de tasas, tendencias del mercado y novedades de Credit Intelligence Colombia. Puedes desactivar estas notificaciones en cualquier momento desde tu perfil.</p>
+            <p>No compartiremos tu información con terceros. Los datos se usan exclusivamente para el funcionamiento de la plataforma y el envío de notificaciones informativas.</p>
+            <button class="btn-primary" onclick="aceptarTerminos()">Aceptar y Continuar</button>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            inicializarAuth();
+            inicializarComparador();
+        });
+    </script>
+</body>
+</html>

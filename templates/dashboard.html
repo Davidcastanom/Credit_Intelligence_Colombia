@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Credit Intelligence</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="brand" onclick="location.href='/'">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
+                <span class="brand-name">Credit Intelligence</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/" class="nav-btn">Inicio</a>
+                <a href="/comparar" class="nav-btn">Comparar Tasas</a>
+                <a href="/calculadora" class="nav-btn">Calculadora</a>
+                <a href="/dashboard" class="nav-btn active">Estad&iacute;sticas</a>
+            </nav>
+            <div class="user-area" id="user-area">
+                {% if google_client_id %}
+                <div id="g_id_onload" data-client_id="{{ google_client_id }}" data-context="signin" data-ux_mode="popup" data-callback="handleGoogleCredential" data-auto_prompt="false"></div>
+                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="medium" data-logo_alignment="left"></div>
+                {% endif %}
+                <div class="user-menu" id="user-menu" style="display:none;">
+                    <img id="user-avatar" class="user-avatar" src="" alt="">
+                    <span id="user-name-display" class="user-name"></span>
+                    <a href="#" id="btn-logout" class="nav-btn" onclick="handleLogout();return false;">Salir</a>
+                </div>
+            </div>
+        </header>
+
+        <!-- Fila de KPIs -->
+        <div class="stats-grid" id="kpi-grid">
+            <div class="glass-panel stat-card">
+                <div class="stat-icon">🛡️</div>
+                <div class="stat-content">
+                    <div class="label">Usura Vigente</div>
+                    <div class="value" id="dash-usura">--</div>
+                    <div class="desc" id="dash-usura-modalidad">Consumo Ordinario</div>
+                </div>
+            </div>
+            <div class="glass-panel stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-content">
+                    <div class="label">Mejor Tasa Consumo</div>
+                    <div class="value highlight-gold" id="dash-mejor-tasa">--</div>
+                    <div class="desc" id="dash-mejor-banco">---</div>
+                </div>
+            </div>
+            <div class="glass-panel stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-content">
+                    <div class="label">Promedio Mercado</div>
+                    <div class="value" id="dash-promedio">--</div>
+                    <div class="desc" id="dash-promedio-desc">Consumo Libre Inversi&oacute;n</div>
+                </div>
+            </div>
+            <div class="glass-panel stat-card">
+                <div class="stat-icon">⚠️</div>
+                <div class="stat-content">
+                    <div class="label">Alertas de Usura</div>
+                    <div class="value" id="dash-alertas">0</div>
+                    <div class="desc" id="dash-alertas-desc">productos cerca del l&iacute;mite</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila de Filtros -->
+        <div class="dashboard-filters">
+            <div class="filter-group">
+                <label>Rango fechas</label>
+                <div class="filter-pills" id="filtro-rango">
+                    <button class="pill active" data-value="7">7 d&iacute;as</button>
+                    <button class="pill" data-value="30">30 d&iacute;as</button>
+                    <button class="pill" data-value="90">90 d&iacute;as</button>
+                    <button class="pill" data-value="all">Todo</button>
+                </div>
+            </div>
+            <div class="filter-group">
+                <label for="filtro-categoria-dash">Categor&iacute;a</label>
+                <select id="filtro-categoria-dash" class="select-input">
+                    <option value="todas">Todas</option>
+                    <option value="Consumo" selected>Consumo</option>
+                    <option value="Bajo Monto">Bajo Monto</option>
+                    <option value="Vivienda">Vivienda</option>
+                    <option value="Microcredito">Microcr&eacute;dito</option>
+                    <option value="Libranza">Libranza</option>
+                    <option value="Vehiculo">Veh&iacute;culo</option>
+                    <option value="Comercial">Comercial</option>
+                    <option value="Productivo Mayor Monto">Prod. Mayor Monto</option>
+                    <option value="Productivo Rural">Prod. Rural</option>
+                    <option value="Productivo Urbano">Prod. Urbano</option>
+                    <option value="Popular Productivo Rural">Pop. Prod. Rural</option>
+                    <option value="Popular Productivo Urbano">Pop. Prod. Urbano</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filtro-banco-dash">Banco</label>
+                <select id="filtro-banco-dash" class="select-input">
+                    <option value="todas">Todos los bancos</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="filtro-entidad-dash">Tipo entidad</label>
+                <select id="filtro-entidad-dash" class="select-input">
+                    <option value="todas">Todas</option>
+                    <option value="Banco tradicional">Banco tradicional</option>
+                    <option value="Nubanco">Nubanco</option>
+                    <option value="Cooperativa">Cooperativa</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Tasas Vigentes por Entidad</h3>
+                    <span class="chart-badge" id="bar-chart-count">0 productos</span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chart-bar-tasas"></canvas>
+                </div>
+            </div>
+            <div class="chart-card">
+                <div class="chart-header">
+                    <h3>Evoluci&oacute;n Hist&oacute;rica de Tasas</h3>
+                    <div style="display:flex; gap:8px; align-items:center;">
+                        <span class="chart-badge" id="line-chart-count">0 bancos</span>
+                        <button class="btn-export-chart" onclick="exportarHistorialTasas()" title="Exportar CSV">⬇</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="chart-line-historial"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Usura History Chart -->
+        <div class="chart-card chart-full">
+            <div class="chart-header">
+                <h3>Evoluci&oacute;n de Tasas de Usura por Modalidad</h3>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <span class="chart-badge">Fuente: Superintendencia Financiera</span>
+                    <button class="btn-export-chart" onclick="exportarHistorialUsura()" title="Exportar CSV">⬇</button>
+                </div>
+            </div>
+            <div class="chart-container chart-container-lg">
+                <canvas id="chart-usura-historial"></canvas>
+            </div>
+        </div>
+
+        <!-- Alertas de Usura -->
+        <div class="glass-panel" id="alertas-panel">
+            <div class="alertas-header">
+                <h3>Alertas de Usura Activas</h3>
+                <span class="chart-badge" id="alertas-count">0 productos en riesgo</span>
+            </div>
+            <div class="table-responsive" id="alertas-table-container" style="display:none;">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Gravedad</th>
+                            <th>Banco</th>
+                            <th>Producto</th>
+                            <th>Categor&iacute;a</th>
+                            <th>Tasa E.A.</th>
+                            <th>L&iacute;mite Usura</th>
+                            <th>Distancia</th>
+                        </tr>
+                    </thead>
+                    <tbody id="alertas-body">
+                    </tbody>
+                </table>
+            </div>
+            <div id="alertas-empty" style="text-align:center; padding: 2rem; color: var(--color-text-secondary);">
+                Ning&uacute;n producto se acerca al l&iacute;mite de usura actualmente.
+            </div>
+        </div>
+
+        <!-- Sync Status -->
+        <div class="sync-bar">
+            <span id="sync-icon">⏳</span>
+            <span id="sync-text">Cargando estado de sincronizaci&oacute;n...</span>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Credit Intelligence Colombia. An&aacute;lisis din&aacute;mico de estad&iacute;sticas financieras.</p>
+        </footer>
+    </div>
+
+    <div class="modal-overlay" id="terms-modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Términos y Condiciones</h2>
+            <p>Al registrarte, aceptas recibir notificaciones sobre actualizaciones de tasas, tendencias del mercado y novedades de Credit Intelligence Colombia. Puedes desactivar estas notificaciones en cualquier momento desde tu perfil.</p>
+            <p>No compartiremos tu información con terceros. Los datos se usan exclusivamente para el funcionamiento de la plataforma y el envío de notificaciones informativas.</p>
+            <button class="btn-primary" onclick="aceptarTerminos()">Aceptar y Continuar</button>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            inicializarAuth();
+            inicializarDashboard();
+        });
+    </script>
+</body>
+</html>

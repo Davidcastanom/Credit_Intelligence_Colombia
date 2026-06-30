@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tasas - Credit Intelligence Colombia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+    <div class="contenedor">
+
+        <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo Credit Intelligence Colombia" class="logo">
+
+        <h1>Tasas registradas</h1>
+
+        <table class="tabla-tasas">
+            <thead>
+                <tr>
+                    <th>Banco</th>
+                    <th>Producto</th>
+                    <th>Tasa E.A.</th>
+                    <th>Fecha consulta</th>
+                    <th>Usura vigente</th>
+                    <th>Distancia a usura</th>
+                    <th>Fuente</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for fila in tasas %}
+                <tr>
+                    <td>{{ fila.banco }}</td>
+                    <td>{{ fila.producto }}</td>
+                    <td>{{ fila.tasa_ea }}%</td>
+                    <td>{{ fila.fecha_consulta }}</td>
+                    <td>{{ fila.valor_usura_vigente }}%</td>
+                    <td>{{ fila.distancia_usura }}</td>
+                    <td>
+                        <a href="{{ fila.url_fuente_banco }}" target="_blank" rel="noopener noreferrer" class="link-fuente">
+                            {{ fila.fuente_banco }}
+                        </a>
+                    </td>
+                </tr>  
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+</body>
+</html>

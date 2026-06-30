@@ -1,0 +1,30 @@
+name: ETL Diario - Tasas de Crédito
+
+on:
+  schedule:
+    # Ejecutar el día 1 de cada mes a las 6:00 AM (después de publicación SFC)
+    - cron: '0 6 1 * *'
+  workflow_dispatch:  # Permitir ejecución manual desde GitHub
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ github.workspace }}
+
+    steps:
+      - name: Checkout repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar ETL
+        run: python scripts/run_etl.py

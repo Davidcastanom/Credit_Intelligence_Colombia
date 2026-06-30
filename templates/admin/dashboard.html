@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin - Panel de Control</title>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', sans-serif; background: #0b1421; color: #fff; min-height: 100vh; display: flex; }
+nav { width: 240px; background: rgba(255,255,255,0.03); border-right: 1px solid rgba(255,255,255,0.06); padding: 24px 0; }
+nav h2 { color: rgba(255,255,255,0.4); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; padding: 0 20px; margin-bottom: 16px; }
+nav a { display: block; padding: 10px 20px; color: rgba(255,255,255,0.6); text-decoration: none; font-size: 0.9rem; transition: 0.15s; }
+nav a:hover, nav a.active { background: rgba(59,130,246,0.1); color: #60a5fa; }
+nav a.logout { margin-top: 40px; color: rgba(239,68,68,0.6); }
+nav a.logout:hover { color: #ef4444; background: rgba(239,68,68,0.05); }
+main { flex: 1; padding: 32px 40px; }
+h1 { font-size: 1.5rem; margin-bottom: 8px; }
+p { color: rgba(255,255,255,0.5); margin-bottom: 32px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 32px; }
+.card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 20px; }
+.card h3 { color: rgba(255,255,255,0.4); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.card .value { font-size: 1.5rem; font-weight: 700; }
+.card .sub { color: rgba(255,255,255,0.4); font-size: 0.8rem; margin-top: 4px; }
+.section h2 { font-size: 1rem; margin-bottom: 12px; }
+ul { list-style: none; }
+ul li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+ul li a { color: #60a5fa; text-decoration: none; }
+ul li a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<nav>
+<h2>Admin</h2>
+<a href="{{ url_for('admin_dashboard') }}" class="active">Panel de Control</a>
+<a href="{{ url_for('admin_usura') }}">Tasas de Usura</a>
+<a href="{{ url_for('admin_usuarios') }}">Usuarios</a>
+<a href="{{ url_for('admin_notificar') }}">Notificar</a>
+<a href="{{ url_for('dashboard') }}" target="_blank">Dashboard Público</a>
+<a href="{{ url_for('admin_logout') }}" class="logout">Cerrar Sesión</a>
+</nav>
+<main>
+<h1>Panel de Control</h1>
+<p>Administración del sistema de tasas de crédito.</p>
+<div class="cards">
+<div class="card"><h3>Tasas de Usura</h3><div class="value">10</div><div class="sub">modalidades registradas</div></div>
+<div class="card"><h3>Última Actualización</h3><div class="value" id="ultima-act">--</div><div class="sub">vía ETL o manual</div></div>
+<div class="card"><h3>Frecuencia Recomendada</h3><div class="value">Mensual</div><div class="sub">cuando SFC publique nuevo certificado</div></div>
+</div>
+<div class="section">
+<h2> Acciones Rápidas</h2>
+<ul>
+<li><a href="{{ url_for('admin_usura') }}"> Actualizar tasas de usura manualmente</a></li>
+<li><a href="{{ url_for('dashboard') }}" target="_blank"> Ver dashboard público de tasas</a></li>
+</ul>
+</div>
+</main>
+<script>
+fetch('/api/sync/status').then(r=>r.json()).then(d=>{
+  document.getElementById('ultima-act').textContent = d.fecha_ejecucion || 'Nunca';
+}).catch(()=>{document.getElementById('ultima-act').textContent='Error al consultar';});
+</script>
+</body>
+</html>

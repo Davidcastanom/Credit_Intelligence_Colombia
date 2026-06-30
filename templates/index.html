@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Intelligence Colombia</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="brand" onclick="location.href='/'">
+                <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
+                <span class="brand-name">Credit Intelligence</span>
+            </div>
+            <nav class="nav-links">
+                <a href="/" class="nav-btn active">Inicio</a>
+                <a href="/comparar" class="nav-btn">Comparar Tasas</a>
+                <a href="/calculadora" class="nav-btn">Calculadora</a>
+                <a href="/dashboard" class="nav-btn">Estadísticas</a>
+            </nav>
+            <div class="user-area" id="user-area">
+                {% if google_client_id %}
+                <div id="g_id_onload" data-client_id="{{ google_client_id }}" data-context="signin" data-ux_mode="popup" data-callback="handleGoogleCredential" data-auto_prompt="false"></div>
+                <div class="g_id_signin" data-type="standard" data-shape="pill" data-theme="outline" data-text="signin_with" data-size="medium" data-logo_alignment="left"></div>
+                {% endif %}
+                <div class="user-menu" id="user-menu" style="display:none;">
+                    <img id="user-avatar" class="user-avatar" src="" alt="">
+                    <span id="user-name-display" class="user-name"></span>
+                    <a href="#" id="btn-logout" class="nav-btn" onclick="handleLogout();return false;">Salir</a>
+                </div>
+            </div>
+        </header>
+
+        <section class="hero">
+            <h1>Credit Intelligence Colombia</h1>
+            <p>Monitoreo en tiempo real de las tasas de interés bancarias y análisis inteligente de usura legal para decisiones financieras estratégicas.</p>
+            <a href="/comparar" class="btn-primary">Ver Comparativa de Tasas</a>
+        </section>
+
+        <div class="features-grid">
+            <div class="glass-panel feature-card" onclick="location.href='/comparar'">
+                <div class="icon">📊</div>
+                <h3>Comparador de Tasas</h3>
+                <p>Busca, filtra y ordena las tasas vigentes de los bancos colombianos. Alertas visuales inmediatas cuando una tasa se aproxima al límite de usura.</p>
+            </div>
+            
+            <div class="glass-panel feature-card" onclick="location.href='/calculadora'">
+                <div class="icon">🧮</div>
+                <h3>Calculadora Francesa</h3>
+                <p>Simulador de crédito con el sistema de amortización francés. Obtén tu cuota mensual fija y el desglose de intereses, capital y saldo pendiente.</p>
+            </div>
+
+            <div class="glass-panel feature-card" onclick="location.href='/dashboard'">
+                <div class="icon">📈</div>
+                <h3>Dashboard Estadístico</h3>
+                <p>Visualiza gráficos interactivos del comportamiento de tasas por banco y analiza tendencias históricas de las principales entidades.</p>
+            </div>
+        </div>
+
+        <footer>
+            <p>&copy; 2026 Credit Intelligence Colombia. Datos de tasas para fines ilustrativos y analíticos. <a href="/admin/login" style="color:inherit;opacity:0.4;text-decoration:none;font-size:0.75rem;">Admin</a></p>
+        </footer>
+    </div>
+
+    <div class="modal-overlay" id="terms-modal" style="display:none;">
+        <div class="modal-content">
+            <h2>Términos y Condiciones</h2>
+            <p>Al registrarte, aceptas recibir notificaciones sobre actualizaciones de tasas, tendencias del mercado y novedades de Credit Intelligence Colombia. Puedes desactivar estas notificaciones en cualquier momento desde tu perfil.</p>
+            <p>No compartiremos tu información con terceros. Los datos se usan exclusivamente para el funcionamiento de la plataforma y el envío de notificaciones informativas.</p>
+            <button class="btn-primary" onclick="aceptarTerminos()">Aceptar y Continuar</button>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            inicializarAuth();
+        });
+    </script>
+</body>
+</html>
