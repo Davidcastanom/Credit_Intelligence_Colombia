@@ -1,0 +1,13 @@
+# Entorno virtual
+venv/
+
+# Base de datos
+*.db
+
+# Sistema Windows
+Thumbs.db
+desktop.ini
+
+# Python compilado
+__pycache__/
+*.pyc
