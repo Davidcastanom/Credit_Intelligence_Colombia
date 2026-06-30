@@ -925,4 +925,175 @@ footer {
     .info-section h2 {
         font-size: var(--text-xl);
     }
+
+    /* ==================== COMPARAR TASAS ==================== */
+    /* Ocultar columnas secundarias: Tipo Entidad, Tasa M.V., Actualización, Fuente */
+    #tabla-tasas th:nth-child(2),
+    #tabla-tasas td:nth-child(2),
+    #tabla-tasas th:nth-child(6),
+    #tabla-tasas td:nth-child(6),
+    #tabla-tasas th:nth-child(8),
+    #tabla-tasas td:nth-child(8),
+    #tabla-tasas th:nth-child(9),
+    #tabla-tasas td:nth-child(9) {
+        display: none;
+    }
+
+    .controls-row {
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .controls-row .search-input,
+    .controls-row .select-input {
+        width: 100%;
+    }
+
+    section.glass-panel h2 {
+        font-size: 1.35rem !important;
+    }
+
+    /* ==================== CALCULADORA ==================== */
+    .calc-grid .glass-panel {
+        padding: var(--space-4);
+    }
+
+    .calc-grid .form-group label {
+        font-size: var(--text-xs);
+    }
+
+    .form-group input[type="number"] {
+        font-size: var(--text-sm);
+    }
+
+    #resultados-panel .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-3);
+    }
+
+    #resultados-panel .stat-card {
+        padding: var(--space-3);
+    }
+
+    #resultados-panel .stat-card .value {
+        font-size: var(--text-base);
+    }
+
+    #resultados-panel .stat-card .label {
+        font-size: 0.65rem;
+    }
+
+    /* Tabla de amortización compacta */
+    #tabla-amortizacion th,
+    #tabla-amortizacion td {
+        padding: var(--space-2) var(--space-2);
+        font-size: 0.7rem;
+        white-space: nowrap;
+    }
+
+    #tabla-amortizacion th:nth-child(1),
+    #tabla-amortizacion td:nth-child(1) {
+        text-align: center;
+        width: 32px;
+    }
+
+    .info-banner {
+        font-size: var(--text-xs);
+        padding: var(--space-2) var(--space-3);
+    }
+
+    #resultados-panel h3 {
+        font-size: 1.1rem;
+    }
+
+    /* ==================== DASHBOARD ==================== */
+    /* KPIs: 2 columnas */
+    #kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-3);
+    }
+
+    #kpi-grid .stat-card {
+        padding: var(--space-3);
+    }
+
+    #kpi-grid .stat-icon {
+        font-size: 1.2rem;
+    }
+
+    #kpi-grid .stat-content .value {
+        font-size: var(--text-lg);
+    }
+
+    #kpi-grid .stat-content .label {
+        font-size: 0.65rem;
+    }
+
+    #kpi-grid .stat-content .desc {
+        font-size: 0.6rem;
+    }
+
+    /* Filtros dashboard: apilados */
+    .dashboard-filters {
+        flex-direction: column;
+        gap: var(--space-3);
+    }
+
+    .dashboard-filters .filter-group {
+        width: 100%;
+    }
+
+    .dashboard-filters .filter-group .select-input {
+        width: 100%;
+    }
+
+    .dashboard-filters .filter-pills {
+        flex-wrap: wrap;
+    }
+
+    .dashboard-filters .filter-pills .pill {
+        font-size: var(--text-xs);
+        padding: var(--space-1) var(--space-3);
+    }
+
+    /* Charts más bajos */
+    .chart-container {
+        height: 220px;
+    }
+
+    .chart-container-lg {
+        height: 260px;
+    }
+
+    .chart-card h3 {
+        font-size: 0.85rem;
+    }
+
+    .chart-badge {
+        font-size: 0.6rem;
+        padding: 2px var(--space-2);
+    }
+
+    /* Alertas: ocultar Categoría y Límite Usura */
+    #alertas-table-container th:nth-child(4),
+    #alertas-table-container td:nth-child(4),
+    #alertas-table-container th:nth-child(6),
+    #alertas-table-container td:nth-child(6) {
+        display: none;
+    }
+
+    #alertas-table-container th,
+    #alertas-table-container td {
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--text-xs);
+    }
+
+    .alertas-header h3 {
+        font-size: 1rem;
+    }
+
+    .sync-bar {
+        font-size: var(--text-xs);
+        padding: var(--space-2) var(--space-3);
+    }
 }
