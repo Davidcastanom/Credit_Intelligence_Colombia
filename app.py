@@ -8,7 +8,7 @@ import secrets
 from email.mime.text import MIMEText
 from functools import wraps
 from pathlib import Path
-from flask import Flask, render_template, jsonify, request, session, redirect, url_for
+from flask import Flask, render_template, jsonify, request, session, redirect, url_for, send_from_directory
 from database.migrate import ejecutar_migraciones
 from database.db import (
     obtener_tasas_comparativa,
@@ -406,7 +406,7 @@ def dashboard():
 
 @app.route("/favicon.ico")
 def favicon():
-    return redirect(url_for("static", filename="favicon.svg"))
+    return send_from_directory(app.static_folder, "favicon.ico", mimetype="image/x-icon")
 
 # ============================================
 # ENDPOINTS REST API
