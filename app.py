@@ -404,6 +404,10 @@ def calculadora():
 def dashboard():
     return render_template("dashboard.html")
 
+@app.route("/favicon.ico")
+def favicon():
+    return redirect(url_for("static", filename="favicon.svg"))
+
 # ============================================
 # ENDPOINTS REST API
 # ============================================
