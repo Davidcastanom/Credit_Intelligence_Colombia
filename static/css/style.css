@@ -231,7 +231,7 @@ header {
 
 .info-section h2 {
     font-size: var(--text-2xl);
-    color: var(--color-text-primary);
+    color: var(--color-text);
     margin-bottom: var(--space-6);
     text-align: center;
 }
@@ -260,7 +260,7 @@ header {
 }
 
 .info-card strong {
-    color: var(--color-text-primary);
+    color: var(--color-text);
 }
 
 /* Botones */
@@ -837,7 +837,7 @@ footer {
     display: block;
     width: 24px;
     height: 2px;
-    background: var(--color-text-primary);
+    background: var(--color-text);
     border-radius: 2px;
     transition: transform 0.2s, opacity 0.2s;
 }
