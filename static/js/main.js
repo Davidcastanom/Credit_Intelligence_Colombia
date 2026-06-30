@@ -466,29 +466,51 @@ async function inicializarDashboard() {
     }
 }
 
+function animarContador(el, valorFinal, sufijo) {
+    if (!el) return;
+    sufijo = sufijo || '';
+    const esNumero = typeof valorFinal === 'number';
+    if (!esNumero) { el.textContent = valorFinal + sufijo; return; }
+    const duracion = 800;
+    const inicio = performance.now();
+    const valorInicial = 0;
+    function paso(ahora) {
+        const t = Math.min((ahora - inicio) / duracion, 1);
+        const suavizado = 1 - Math.pow(1 - t, 3);
+        const actual = valorInicial + (valorFinal - valorInicial) * suavizado;
+        if (typeof valorFinal === 'number' && !Number.isInteger(valorFinal)) {
+            el.textContent = actual.toFixed(2) + sufijo;
+        } else {
+            el.textContent = Math.round(actual) + sufijo;
+        }
+        if (t < 1) requestAnimationFrame(paso);
+    }
+    requestAnimationFrame(paso);
+}
+
 function renderizarKPIs(tasas, indicadores) {
     const usuraCons = indicadores['tasa_usura_consumo'] || indicadores['tasa_usura_consumo_ordinario'] || 28.79;
-    document.getElementById('dash-usura').textContent = `${usuraCons.toFixed(2)}%`;
+    animarContador(document.getElementById('dash-usura'), usuraCons, '%');
     document.getElementById('dash-usura-modalidad').textContent = `Consumo Ordinario`;
+
+    const alertas = obtenerAlertas(tasas, indicadores);
+    animarContador(document.getElementById('dash-alertas'), alertas.length, '');
+    document.getElementById('dash-alertas').style.color = alertas.length > 0 ? 'var(--color-error)' : 'var(--color-success)';
+    document.getElementById('dash-alertas-desc').textContent = alertas.length === 1
+        ? 'producto cerca del l\u00edmite'
+        : 'productos cerca del l\u00edmite';
 
     const tasasConsumo = tasas.filter(t => t.categoria === 'Consumo');
     if (tasasConsumo.length > 0) {
         tasasConsumo.sort((a, b) => a.tasa_ea - b.tasa_ea);
         const mejor = tasasConsumo[0];
-        document.getElementById('dash-mejor-tasa').textContent = `${mejor.tasa_ea.toFixed(2)}%`;
+        animarContador(document.getElementById('dash-mejor-tasa'), mejor.tasa_ea, '%');
         document.getElementById('dash-mejor-banco').textContent = `${mejor.banco} (${mejor.producto})`;
 
         const suma = tasasConsumo.reduce((acc, curr) => acc + curr.tasa_ea, 0);
         const prom = suma / tasasConsumo.length;
-        document.getElementById('dash-promedio').textContent = `${prom.toFixed(2)}%`;
+        animarContador(document.getElementById('dash-promedio'), prom, '%');
     }
-
-    const alertas = obtenerAlertas(tasas, indicadores);
-    document.getElementById('dash-alertas').textContent = alertas.length;
-    document.getElementById('dash-alertas').style.color = alertas.length > 0 ? 'var(--color-error)' : 'var(--color-success)';
-    document.getElementById('dash-alertas-desc').textContent = alertas.length === 1
-        ? 'producto cerca del l\u00edmite'
-        : 'productos cerca del l\u00edmite';
 }
 
 function obtenerAlertas(tasas, indicadores) {
@@ -629,21 +651,37 @@ function renderizarBarChart(tasas) {
     const datos = tasas.length > 0 ? tasas : [];
     const labels = datos.map(t => t.banco);
     const valores = datos.map(t => t.tasa_ea);
-    const colores = datos.map((t, i) => {
-        const tipo = t.tipo_entidad || '';
-        if (tipo === 'Cooperativa') return 'rgba(239, 68, 68, 0.7)';
-        if (tipo === 'Nubanco') return 'rgba(245, 158, 11, 0.7)';
-        return 'rgba(59, 130, 246, 0.7)';
-    });
-    const bordes = datos.map((t, i) => {
-        const tipo = t.tipo_entidad || '';
-        if (tipo === 'Cooperativa') return '#ef4444';
-        if (tipo === 'Nubanco') return '#f59e0b';
-        return '#3b82f6';
-    });
     const usura = indicadoresUsuraDashboard['tasa_usura_consumo_ordinario']
         || indicadoresUsuraDashboard['tasa_usura_consumo']
         || 28.79;
+
+    // Gradient fills
+    const gradColores = datos.map(t => {
+        const tipo = t.tipo_entidad || '';
+        if (tipo === 'Cooperativa') {
+            const g = canvas.createLinearGradient(0, 0, 0, 300);
+            g.addColorStop(0, 'rgba(239, 68, 68, 0.85)');
+            g.addColorStop(1, 'rgba(239, 68, 68, 0.25)');
+            return g;
+        }
+        if (tipo === 'Nubanco') {
+            const g = canvas.createLinearGradient(0, 0, 0, 300);
+            g.addColorStop(0, 'rgba(245, 158, 11, 0.85)');
+            g.addColorStop(1, 'rgba(245, 158, 11, 0.25)');
+            return g;
+        }
+        const g = canvas.createLinearGradient(0, 0, 0, 300);
+        g.addColorStop(0, 'rgba(11, 60, 111, 0.85)');
+        g.addColorStop(1, 'rgba(11, 60, 111, 0.2)');
+        return g;
+    });
+
+    const bordes = datos.map(t => {
+        const tipo = t.tipo_entidad || '';
+        if (tipo === 'Cooperativa') return '#ef4444';
+        if (tipo === 'Nubanco') return '#f59e0b';
+        return '#0B3C6F';
+    });
 
     chartBarInstance = new Chart(canvas, {
         type: 'bar',
@@ -652,10 +690,11 @@ function renderizarBarChart(tasas) {
             datasets: [{
                 label: 'Tasa E.A. (%)',
                 data: valores,
-                backgroundColor: colores,
+                backgroundColor: gradColores,
                 borderColor: bordes,
                 borderWidth: 1.5,
-                borderRadius: 4
+                borderRadius: 6,
+                borderSkipped: false
             }]
         },
         options: {
@@ -672,34 +711,76 @@ function renderizarBarChart(tasas) {
                     }
                 }
             },
+            font: { family: 'Inter, system-ui, sans-serif' },
             plugins: {
-                legend: {
-                    display: false
-                },
+                legend: { display: false },
                 tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleFont: { weight: '700', size: 13 },
+                    bodyFont: { size: 12 },
+                    padding: 12,
+                    cornerRadius: 8,
+                    displayColors: false,
                     callbacks: {
-                        afterLabel: function(context) {
+                        title: function(items) {
+                            return items[0].label;
+                        },
+                        label: function(context) {
                             const t = datos[context.dataIndex];
-                            return ` ${t.tipo_entidad || ''}\n Producto: ${t.producto || ''}`;
+                            return ['Tasa E.A.: ' + context.parsed.y.toFixed(2) + '%',
+                                    'Tipo: ' + (t.tipo_entidad || 'N/A'),
+                                    'Producto: ' + (t.producto || 'N/A')];
                         }
                     }
                 }
             },
             scales: {
                 x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#9ca3af', maxRotation: 45 }
+                    grid: { display: false },
+                    ticks: {
+                        color: '#6b7280',
+                        font: { family: 'Inter, system-ui, sans-serif', size: 11, weight: '500' },
+                        maxRotation: 45
+                    }
                 },
                 y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    grid: { color: 'rgba(107, 114, 128, 0.08)', drawBorder: false },
                     ticks: {
-                        color: '#9ca3af',
-                        callback: function(value) { return value.toFixed(1) + '%'; }
+                        color: '#6b7280',
+                        font: { family: 'Inter, system-ui, sans-serif', size: 11 },
+                        callback: function(value) { return value.toFixed(1) + '%'; },
+                        stepSize: 5
                     },
-                    suggestedMax: Math.ceil(usura * 1.1)
+                    suggestedMax: Math.ceil(usura * 1.15)
                 }
             }
-        }
+        },
+        plugins: [{
+            id: 'usuraLine',
+            afterDraw: function(chart) {
+                const yScale = chart.scales.y;
+                const xScale = chart.scales.x;
+                const y = yScale.getPixelForValue(usura);
+                if (y < yScale.top || y > yScale.bottom) return;
+
+                const ctx2 = chart.ctx;
+                ctx2.save();
+                ctx2.setLineDash([6, 4]);
+                ctx2.strokeStyle = 'rgba(220, 38, 38, 0.7)';
+                ctx2.lineWidth = 2;
+                ctx2.beginPath();
+                ctx2.moveTo(xScale.left, y);
+                ctx2.lineTo(xScale.right, y);
+                ctx2.stroke();
+
+                ctx2.setLineDash([]);
+                ctx2.fillStyle = 'rgba(220, 38, 38, 0.9)';
+                ctx2.font = '11px Inter, system-ui, sans-serif';
+                ctx2.textAlign = 'left';
+                ctx2.fillText('L\u00edmite usura: ' + usura.toFixed(2) + '%', xScale.right - 160, y - 6);
+                ctx2.restore();
+            }
+        }]
     });
 }
 
@@ -741,16 +822,20 @@ function renderizarLineChart(historial, bancoFiltro) {
             return r ? r.tasa_ea : null;
         });
         const color = obtenerColorBanco(banco, index);
+        const isSelected = bancoFiltro !== 'todas';
         return {
             label: banco,
             data: data,
             borderColor: color,
-            backgroundColor: color + '22',
-            borderWidth: bancoFiltro !== 'todas' ? 4 : 3,
+            backgroundColor: isSelected ? color + '18' : 'transparent',
+            borderWidth: isSelected ? 4 : 2.5,
             tension: 0.3,
-            fill: false,
-            pointRadius: bancoFiltro !== 'todas' ? 5 : 3,
-            pointHoverRadius: 7
+            fill: isSelected,
+            pointRadius: isSelected ? 5 : 2,
+            pointHoverRadius: 7,
+            pointBackgroundColor: isSelected ? color : 'transparent',
+            pointBorderColor: isSelected ? '#fff' : 'transparent',
+            pointBorderWidth: isSelected ? 2 : 0
         };
     });
 
@@ -762,20 +847,40 @@ function renderizarLineChart(historial, bancoFiltro) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            font: { family: 'Inter, system-ui, sans-serif' },
             plugins: {
                 legend: {
-                    labels: { color: '#9ca3af', font: { family: 'Inter', size: 11 } }
+                    labels: {
+                        color: '#4b5563',
+                        font: { family: 'Inter, system-ui, sans-serif', size: 11, weight: '500' },
+                        usePointStyle: true,
+                        padding: 16
+                    }
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleFont: { weight: '700', size: 12 },
+                    bodyFont: { size: 11 },
+                    padding: 10,
+                    cornerRadius: 6,
+                    displayColors: true,
+                    boxPadding: 4
                 }
             },
             scales: {
                 x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#9ca3af' }
+                    grid: { display: false },
+                    ticks: {
+                        color: '#6b7280',
+                        font: { family: 'Inter, system-ui, sans-serif', size: 10 },
+                        maxTicksLimit: 10
+                    }
                 },
                 y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    grid: { color: 'rgba(107, 114, 128, 0.08)', drawBorder: false },
                     ticks: {
-                        color: '#9ca3af',
+                        color: '#6b7280',
+                        font: { family: 'Inter, system-ui, sans-serif', size: 11 },
                         callback: function(value) { return value.toFixed(1) + '%'; }
                     }
                 }
@@ -821,15 +926,20 @@ function renderizarUsuraChart(histUsura) {
             .replace('tasa_usura_', '')
             .replace(/_/g, ' ')
             .replace(/\b\w/g, l => l.toUpperCase());
+        const color = coloresUsura[idx % coloresUsura.length];
         return {
             label: etiqueta,
             data: data,
-            borderColor: coloresUsura[idx % coloresUsura.length],
-            backgroundColor: coloresUsura[idx % coloresUsura.length] + '22',
+            borderColor: color,
+            backgroundColor: color + '18',
             borderWidth: 2,
-            tension: 0.3,
+            tension: 0.4,
             fill: false,
-            pointRadius: 3
+            pointRadius: 2,
+            pointHoverRadius: 5,
+            pointBackgroundColor: color,
+            pointBorderColor: '#fff',
+            pointBorderWidth: 1
         };
     });
 
@@ -839,20 +949,43 @@ function renderizarUsuraChart(histUsura) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            font: { family: 'Inter, system-ui, sans-serif' },
+            interaction: { mode: 'nearest', intersect: false },
             plugins: {
                 legend: {
-                    labels: { color: '#9ca3af', font: { family: 'Inter', size: 11 } }
+                    labels: {
+                        color: '#4b5563',
+                        font: { family: 'Inter, system-ui, sans-serif', size: 10, weight: '500' },
+                        usePointStyle: true,
+                        padding: 14,
+                        boxWidth: 12
+                    },
+                    maxHeight: 100
+                },
+                tooltip: {
+                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                    titleFont: { weight: '700', size: 12 },
+                    bodyFont: { size: 11 },
+                    padding: 10,
+                    cornerRadius: 6,
+                    displayColors: true,
+                    boxPadding: 4
                 }
             },
             scales: {
                 x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { color: '#9ca3af' }
+                    grid: { display: false },
+                    ticks: {
+                        color: '#6b7280',
+                        font: { family: 'Inter, system-ui, sans-serif', size: 10 },
+                        maxTicksLimit: 8
+                    }
                 },
                 y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                    grid: { color: 'rgba(107, 114, 128, 0.08)', drawBorder: false },
                     ticks: {
-                        color: '#9ca3af',
+                        color: '#6b7280',
+                        font: { family: 'Inter, system-ui, sans-serif', size: 11 },
                         callback: function(value) { return value.toFixed(1) + '%'; }
                     }
                 }
