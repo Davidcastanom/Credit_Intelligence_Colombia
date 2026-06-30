@@ -922,3 +922,28 @@ function renderizarSyncStatus(syncData) {
         text.textContent = 'Sin sincronizaciones previas. Ejecute python scripts/run_etl.py';
     }
 }
+
+// Menú responsive
+function inicializarMenu() {
+    const toggle = document.getElementById('menu-toggle');
+    const nav = document.getElementById('nav-links');
+    const userArea = document.getElementById('user-area');
+    if (!toggle || !nav) return;
+
+    toggle.addEventListener('click', function(e) {
+        e.stopPropagation();
+        this.classList.toggle('open');
+        nav.classList.toggle('open');
+        if (userArea) userArea.classList.toggle('open');
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!toggle.contains(e.target) && !nav.contains(e.target)) {
+            toggle.classList.remove('open');
+            nav.classList.remove('open');
+            if (userArea) userArea.classList.remove('open');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', inicializarMenu);

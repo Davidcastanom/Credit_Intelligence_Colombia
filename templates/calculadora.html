@@ -18,7 +18,10 @@
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="logo">
                 <span class="brand-name">Credit Intelligence</span>
             </div>
-            <nav class="nav-links">
+            <button class="menu-toggle" id="menu-toggle" aria-label="Menú">
+                <span></span><span></span><span></span>
+            </button>
+            <nav class="nav-links" id="nav-links">
                 <a href="/" class="nav-btn">Inicio</a>
                 <a href="/comparar" class="nav-btn">Comparar Tasas</a>
                 <a href="/calculadora" class="nav-btn active">Calculadora</a>
