@@ -2,39 +2,17 @@ name: ETL Mensual
 
 on:
   schedule:
-    # El día 1 de cada mes a las 10:00 AM UTC (5:00 AM Colombia)
     - cron: "0 10 1 * *"
   workflow_dispatch:
 
-env:
-  PYTHON_VERSION: "3.12"
-
 jobs:
-  ejecutar_etl:
+  redeploy:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v4
-
-      - name: Instalar Python ${{ env.PYTHON_VERSION }}
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-
-      - name: Instalar dependencias
+      - name: Trigger Render Deploy
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Ejecutar ETL
-        run: python scripts/run_etl.py
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
-
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK }}"
       - name: Notificar fallo
         if: failure()
         run: |
-          echo "❌ ETL falló el $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
-          echo "Revisa los logs del workflow en:"
-          echo "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          echo "ETL falló — verifica logs en Render Dashboard"

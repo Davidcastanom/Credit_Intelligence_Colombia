@@ -52,7 +52,7 @@ def _translate_sql(sql):
     sql = sql.replace("?", "%s")
     if re.match(r"\s*INSERT\s+OR\s+IGNORE\s+INTO", sql, re.IGNORECASE):
         sql = re.sub(r"\bINSERT\s+OR\s+IGNORE\s+INTO\b", "INSERT INTO", sql, flags=re.IGNORECASE)
-        if "ON CONFLICT" not in sql.upper():
+        if "ON CONFLICT" not in sql.upper() and "SELECT" not in sql.upper():
             sql += " ON CONFLICT DO NOTHING"
     sql = re.sub(r"\bexcluded\.", "EXCLUDED.", sql)
     sql = re.sub(r"\bINTEGER\s+PRIMARY\s+KEY\s+AUTOINCREMENT\b", "SERIAL PRIMARY KEY", sql, flags=re.IGNORECASE)
