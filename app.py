@@ -70,6 +70,35 @@ app.config.update(
 # ---------------------------------------------------------------
 ejecutar_migraciones()
 
+# Poblar datos automáticamente si la BD está vacía
+try:
+    from database.db import obtener_ultimo_sync
+    from database.etl_scraper import correr_etl
+    import datetime
+
+    ultimo = obtener_ultimo_sync()
+    hoy = datetime.date.today()
+    debe_correr = False
+    if not ultimo:
+        print("[Auto-ETL] BD vacía — ejecutando ETL inicial...")
+        debe_correr = True
+    else:
+        try:
+            ultima_fecha = datetime.datetime.strptime(ultimo["fecha_ejecucion"], "%Y-%m-%d").date()
+            if (hoy - ultima_fecha).days > 1:
+                print(f"[Auto-ETL] Último sync: {ultimo['fecha_ejecucion']} — ejecutando ETL...")
+                debe_correr = True
+        except (ValueError, TypeError):
+            debe_correr = True
+    if debe_correr:
+        codigo = correr_etl()
+        if codigo == 0:
+            print("[Auto-ETL] ETL completado automáticamente.")
+        else:
+            print("[Auto-ETL] ETL automático falló.")
+except Exception as e:
+    print(f"[Auto-ETL] Error (no crítico): {e}")
+
 # ---------------------------------------------------------------
 # RATE LIMITING (anti fuerza bruta)
 # ---------------------------------------------------------------

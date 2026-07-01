@@ -104,17 +104,193 @@ MIGRATIONS = [
 ]
 
 
+INITIAL_SCHEMA = """
+CREATE TABLE IF NOT EXISTS bancos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nit TEXT UNIQUE NOT NULL,
+    nombre TEXT NOT NULL,
+    razon_social TEXT,
+    url_web TEXT,
+    tipo_entidad TEXT NOT NULL DEFAULT 'Banco tradicional'
+);
+
+CREATE TABLE IF NOT EXISTS categorias_credito (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT UNIQUE NOT NULL,
+    descripcion TEXT,
+    modalidad_usura TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS fuentes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT UNIQUE NOT NULL,
+    tipo TEXT NOT NULL,
+    url TEXT
+);
+
+CREATE TABLE IF NOT EXISTS productos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    banco_id INTEGER NOT NULL REFERENCES bancos(id) ON DELETE CASCADE,
+    categoria_id INTEGER NOT NULL REFERENCES categorias_credito(id) ON DELETE CASCADE,
+    nombre TEXT NOT NULL,
+    descripcion TEXT
+);
+
+CREATE TABLE IF NOT EXISTS historico_tasas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    producto_id INTEGER NOT NULL REFERENCES productos(id) ON DELETE CASCADE,
+    tasa_ea REAL NOT NULL,
+    tasa_mv REAL NOT NULL,
+    fecha_registro TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS indicadores (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT UNIQUE NOT NULL,
+    valor REAL NOT NULL,
+    fecha_vigencia_inicio TEXT NOT NULL,
+    fecha_vigencia_fin TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS sync_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha_ejecucion TEXT NOT NULL,
+    fuente_id INTEGER NOT NULL REFERENCES fuentes(id) ON DELETE CASCADE,
+    estado TEXT NOT NULL,
+    registros_procesados INTEGER NOT NULL,
+    detalles TEXT
+);
+
+CREATE TABLE IF NOT EXISTS tasas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    producto_id INTEGER UNIQUE NOT NULL REFERENCES productos(id) ON DELETE CASCADE,
+    tasa_ea REAL NOT NULL,
+    tasa_mv REAL NOT NULL,
+    fuente_id INTEGER NOT NULL REFERENCES fuentes(id) ON DELETE CASCADE,
+    fecha_actualizacion TEXT NOT NULL
+);
+"""
+
+INITIAL_BANCOS = [
+    (1, "890903938-8", "Bancolombia", "Bancolombia S.A."),
+    (2, "860002964-4", "Banco de Bogotá", "Banco de Bogotá S.A."),
+    (3, "901587541-9", "Nequi", "Nequi S.A.S."),
+    (4, "890981395-1", "Confiar", "Confiar Cooperativa Financiera"),
+    (5, "860034313-7", "Davivienda", "Banco Davivienda S.A."),
+    (6, "860003020-1", "BBVA", "BBVA Colombia S.A."),
+    (7, "860007738-9", "Banco Popular", "Banco Popular S.A."),
+    (8, "890300279-4", "Banco de Occidente", "Banco de Occidente S.A."),
+    (9, "860035827-5", "AV Villas", "Banco AV Villas S.A."),
+    (10, "860007335-4", "Banco Caja Social", "Banco Caja Social S.A."),
+    (11, "860034594-1", "Scotiabank Colpatria", "Scotiabank Colpatria S.A."),
+    (12, "800037800-8", "Banco Agrario", "Banco Agrario de Colombia S.A."),
+    (13, "890903937-0", "Itaú", "Itaú Corpbanca Colombia S.A."),
+    (14, "900047981-8", "Falabella", "Banco Falabella S.A."),
+    (15, "890200756-7", "Pichincha", "Banco Pichincha S.A."),
+    (16, "901659846-8", "Nu Colombia", "Nu Colombia C.F."),
+    (17, "901353491-1", "Lulo Bank", "Lulo Bank S.A."),
+    (18, "901400002-9", "RappiPay", "RappiPay S.A.S."),
+    (19, "901097473-5", "Uala", "Uala Colombia S.A.S."),
+    (20, "890906213-1", "Coofinep", "Coofinep Cooperativa Financiera"),
+    (21, "890901176-3", "Cotrafa", "Cotrafa Cooperativa Financiera"),
+    (22, "890907489-5", "JFK", "JFK Cooperativa Financiera"),
+    (23, "890985032-6", "Fincomercio", "Fincomercio Cooperativa Financiera"),
+]
+
+INITIAL_FUENTES = [
+    (1, "Superintendencia Financiera de Colombia", "Oficial", "https://www.superfinanciera.gov.co/"),
+    (2, "Bancolombia - Web Oficial", "Website", "https://www.bancolombia.com/"),
+    (3, "Banco de Bogotá - Web Oficial", "Website", "https://www.bancodebogota.com/"),
+    (4, "Nequi - Web Oficial", "Website", "https://nequi.com/"),
+    (5, "Confiar - Web Oficial", "Website", "https://www.confiar.coop/"),
+    (6, "Davivienda - Web Oficial", "Website", "https://www.davivienda.com/"),
+    (7, "BBVA - Web Oficial", "Website", "https://www.bbva.com.co/"),
+    (8, "Banco Popular - Web Oficial", "Website", "https://www.bancopopular.com.co/"),
+    (9, "Banco de Occidente - Web Oficial", "Website", "https://www.bancodeoccidente.com/"),
+    (10, "AV Villas - Web Oficial", "Website", "https://www.avvillas.com.co/"),
+    (11, "Banco Caja Social - Web Oficial", "Website", "https://www.bancocajasocial.com/"),
+    (12, "Scotiabank Colpatria - Web Oficial", "Website", "https://www.scotiabankcolpatria.com/"),
+    (13, "Banco Agrario - Web Oficial", "Website", "https://www.bancoagrario.gov.co/"),
+    (14, "Itaú - Web Oficial", "Website", "https://www.itau.com.co/"),
+    (15, "Falabella - Web Oficial", "Website", "https://www.bancofalabella.com.co/"),
+    (16, "Pichincha - Web Oficial", "Website", "https://www.pichincha.com.co/"),
+    (17, "Nu Colombia - Web Oficial", "Website", "https://nu.com.co/"),
+    (18, "Lulo Bank - Web Oficial", "Website", "https://www.lulobank.com.co/"),
+    (19, "RappiPay - Web Oficial", "Website", "https://www.rappipay.com.co/"),
+    (20, "Uala - Web Oficial", "Website", "https://www.uala.com.co/"),
+    (21, "Coofinep - Web Oficial", "Website", "https://www.coofinep.com/"),
+    (22, "Cotrafa - Web Oficial", "Website", "https://www.cotrafa.com.co/"),
+    (23, "JFK - Web Oficial", "Website", "https://www.jfk.com.co/"),
+    (24, "Fincomercio - Web Oficial", "Website", "https://www.fincomercio.com/"),
+    (25, "Datos Abiertos Colombia - SFC", "OpenData", "https://www.datos.gov.co/"),
+]
+
+INITIAL_CATEGORIAS = [
+    (1, "Tarjeta de Crédito", "Crédito rotativo con cupo asignado.", "tasa_usura_consumo_ordinario"),
+    (2, "Crédito de Consumo", "Crédito de libre inversión.", "tasa_usura_consumo_ordinario"),
+    (3, "Crédito Hipotecario", "Crédito para vivienda.", "tasa_usura_consumo_ordinario"),
+    (4, "Microcrédito", "Crédito para microempresas.", "tasa_usura_microcredito"),
+    (5, "Libranza", "Crédito con descuento por nómina.", "tasa_usura_consumo_ordinario"),
+    (6, "Crédito Vehículo", "Financiación para compra de vehículo.", "tasa_usura_consumo_ordinario"),
+    (7, "Crédito Comercial", "Capital de trabajo empresarial.", "tasa_usura_productivo_urbano"),
+]
+
+
 def _existe_tabla(cursor, nombre_tabla):
-    cursor.execute(
-        "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?",
-        (nombre_tabla,),
-    )
+    try:
+        cursor.execute(
+            "SELECT COUNT(*) FROM information_schema.tables WHERE table_name = ? AND table_type = 'BASE TABLE'",
+            (nombre_tabla,),
+        )
+    except Exception:
+        cursor.execute(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name=?",
+            (nombre_tabla,),
+        )
     return cursor.fetchone()[0] > 0
+
+
+def _init_schema(conn, cursor):
+    for statement in INITIAL_SCHEMA.split(";"):
+        s = statement.strip()
+        if s:
+            try:
+                cursor.execute(s + ";")
+            except Exception as e:
+                print(f"  [WARN] Creando tabla: {e}")
+    conn.commit()
+
+    cursor.execute("SELECT COUNT(*) FROM bancos")
+    if cursor.fetchone()[0] == 0:
+        for row_id, nit, nombre, razon in INITIAL_BANCOS:
+            cursor.execute(
+                "INSERT INTO bancos (id, nit, nombre, razon_social) VALUES (?, ?, ?, ?)",
+                (row_id, nit, nombre, razon),
+            )
+
+    cursor.execute("SELECT COUNT(*) FROM fuentes")
+    if cursor.fetchone()[0] == 0:
+        for row_id, nombre, tipo, url in INITIAL_FUENTES:
+            cursor.execute(
+                "INSERT INTO fuentes (id, nombre, tipo, url) VALUES (?, ?, ?, ?)",
+                (row_id, nombre, tipo, url),
+            )
+
+    cursor.execute("SELECT COUNT(*) FROM categorias_credito")
+    if cursor.fetchone()[0] == 0:
+        for row_id, nombre, descripcion, modalidad in INITIAL_CATEGORIAS:
+            cursor.execute(
+                "INSERT INTO categorias_credito (id, nombre, descripcion, modalidad_usura) VALUES (?, ?, ?, ?)",
+                (row_id, nombre, descripcion, modalidad),
+            )
+    conn.commit()
 
 
 def ejecutar_migraciones():
     conn = Conexion()
     cursor = conn.cursor()
+
+    _init_schema(conn, cursor)
 
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS schema_migrations (
