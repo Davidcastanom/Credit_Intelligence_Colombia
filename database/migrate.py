@@ -167,7 +167,8 @@ CREATE TABLE IF NOT EXISTS tasas (
     tasa_ea REAL NOT NULL,
     tasa_mv REAL NOT NULL,
     fuente_id INTEGER NOT NULL REFERENCES fuentes(id) ON DELETE CASCADE,
-    fecha_actualizacion TEXT NOT NULL
+    fecha_actualizacion TEXT NOT NULL,
+    es_semilla INTEGER NOT NULL DEFAULT 0
 );
 """
 
@@ -355,6 +356,22 @@ def ejecutar_migraciones():
             "UPDATE bancos SET url_web = ? WHERE nit = ? AND (url_web IS NULL OR url_web = '')",
             (url_web, nit),
         )
+
+    # Migration 11: agregar es_semilla a tasas si no existe
+    try:
+        cursor.execute("SELECT es_semilla FROM tasas LIMIT 1")
+    except Exception:
+        try:
+            cursor.execute("ALTER TABLE tasas ADD COLUMN es_semilla INTEGER NOT NULL DEFAULT 0")
+            cursor.execute("INSERT INTO schema_migrations (migration_index) VALUES (11)")
+            print("  [OK] Migración 11: columna es_semilla agregada a tasas.")
+            ejecutadas += 1
+        except Exception as e:
+            print(f"  [ERROR] Migración 11: {e}")
+            conn.rollback()
+            conn.close()
+            raise
+
     conn.commit()
 
     if ejecutadas == 0:
@@ -420,7 +437,7 @@ def poblar_productos_adicionales():
                 (max_id, banco_id, cat_id, nombre, descripcion),
             )
             c.execute(
-                "INSERT INTO tasas (producto_id, tasa_ea, tasa_mv, fuente_id, fecha_actualizacion) VALUES (?,?,?,1,?)",
+                "INSERT INTO tasas (producto_id, tasa_ea, tasa_mv, fuente_id, fecha_actualizacion, es_semilla) VALUES (?,?,?,1,?,1)",
                 (max_id, tasa_ea, tasa_mv, hoy),
             )
             for i in range(4):

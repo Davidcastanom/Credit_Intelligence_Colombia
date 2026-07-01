@@ -434,8 +434,8 @@ def cargar_tasas_bancarias(df, conexion, fecha_actual):
                 continue
             producto_id = prod_res[0]
             cursor.execute(
-                "INSERT INTO tasas (producto_id, tasa_ea, tasa_mv, fuente_id, fecha_actualizacion) VALUES (?, ?, ?, ?, ?) "
-                "ON CONFLICT(producto_id) DO UPDATE SET tasa_ea = excluded.tasa_ea, tasa_mv = excluded.tasa_mv, fuente_id = excluded.fuente_id, fecha_actualizacion = excluded.fecha_actualizacion",
+                "INSERT INTO tasas (producto_id, tasa_ea, tasa_mv, fuente_id, fecha_actualizacion, es_semilla) VALUES (?, ?, ?, ?, ?, 0) "
+                "ON CONFLICT(producto_id) DO UPDATE SET tasa_ea = excluded.tasa_ea, tasa_mv = excluded.tasa_mv, fuente_id = excluded.fuente_id, fecha_actualizacion = excluded.fecha_actualizacion, es_semilla = excluded.es_semilla",
                 (producto_id, row["tasa_ea"], row["tasa_mv"], FUENTE_TASAS_BANCARIAS, fecha_actual),
             )
             cursor.execute(
