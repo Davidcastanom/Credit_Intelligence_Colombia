@@ -172,29 +172,29 @@ CREATE TABLE IF NOT EXISTS tasas (
 """
 
 INITIAL_BANCOS = [
-    (1, "890903938-8", "Bancolombia", "Bancolombia S.A."),
-    (2, "860002964-4", "Banco de Bogotá", "Banco de Bogotá S.A."),
-    (3, "901587541-9", "Nequi", "Nequi S.A.S."),
-    (4, "890981395-1", "Confiar", "Confiar Cooperativa Financiera"),
-    (5, "860034313-7", "Davivienda", "Banco Davivienda S.A."),
-    (6, "860003020-1", "BBVA", "BBVA Colombia S.A."),
-    (7, "860007738-9", "Banco Popular", "Banco Popular S.A."),
-    (8, "890300279-4", "Banco de Occidente", "Banco de Occidente S.A."),
-    (9, "860035827-5", "AV Villas", "Banco AV Villas S.A."),
-    (10, "860007335-4", "Banco Caja Social", "Banco Caja Social S.A."),
-    (11, "860034594-1", "Scotiabank Colpatria", "Scotiabank Colpatria S.A."),
-    (12, "800037800-8", "Banco Agrario", "Banco Agrario de Colombia S.A."),
-    (13, "890903937-0", "Itaú", "Itaú Corpbanca Colombia S.A."),
-    (14, "900047981-8", "Falabella", "Banco Falabella S.A."),
-    (15, "890200756-7", "Pichincha", "Banco Pichincha S.A."),
-    (16, "901659846-8", "Nu Colombia", "Nu Colombia C.F."),
-    (17, "901353491-1", "Lulo Bank", "Lulo Bank S.A."),
-    (18, "901400002-9", "RappiPay", "RappiPay S.A.S."),
-    (19, "901097473-5", "Uala", "Uala Colombia S.A.S."),
-    (20, "890906213-1", "Coofinep", "Coofinep Cooperativa Financiera"),
-    (21, "890901176-3", "Cotrafa", "Cotrafa Cooperativa Financiera"),
-    (22, "890907489-5", "JFK", "JFK Cooperativa Financiera"),
-    (23, "890985032-6", "Fincomercio", "Fincomercio Cooperativa Financiera"),
+    (1, "890903938-8", "Bancolombia", "Bancolombia S.A.", "Banco tradicional"),
+    (2, "860002964-4", "Banco de Bogotá", "Banco de Bogotá S.A.", "Banco tradicional"),
+    (3, "901587541-9", "Nequi", "Nequi S.A.S.", "Nubanco"),
+    (4, "890981395-1", "Confiar", "Confiar Cooperativa Financiera", "Cooperativa"),
+    (5, "860034313-7", "Davivienda", "Banco Davivienda S.A.", "Banco tradicional"),
+    (6, "860003020-1", "BBVA", "BBVA Colombia S.A.", "Banco tradicional"),
+    (7, "860007738-9", "Banco Popular", "Banco Popular S.A.", "Banco tradicional"),
+    (8, "890300279-4", "Banco de Occidente", "Banco de Occidente S.A.", "Banco tradicional"),
+    (9, "860035827-5", "AV Villas", "Banco AV Villas S.A.", "Banco tradicional"),
+    (10, "860007335-4", "Banco Caja Social", "Banco Caja Social S.A.", "Banco tradicional"),
+    (11, "860034594-1", "Scotiabank Colpatria", "Scotiabank Colpatria S.A.", "Banco tradicional"),
+    (12, "800037800-8", "Banco Agrario", "Banco Agrario de Colombia S.A.", "Banco tradicional"),
+    (13, "890903937-0", "Itaú", "Itaú Corpbanca Colombia S.A.", "Banco tradicional"),
+    (14, "900047981-8", "Falabella", "Banco Falabella S.A.", "Banco tradicional"),
+    (15, "890200756-7", "Pichincha", "Banco Pichincha S.A.", "Banco tradicional"),
+    (16, "901659846-8", "Nu Colombia", "Nu Colombia C.F.", "Nubanco"),
+    (17, "901353491-1", "Lulo Bank", "Lulo Bank S.A.", "Nubanco"),
+    (18, "901400002-9", "RappiPay", "RappiPay S.A.S.", "Nubanco"),
+    (19, "901097473-5", "Uala", "Uala Colombia S.A.S.", "Nubanco"),
+    (20, "890906213-1", "Coofinep", "Coofinep Cooperativa Financiera", "Cooperativa"),
+    (21, "890901176-3", "Cotrafa", "Cotrafa Cooperativa Financiera", "Cooperativa"),
+    (22, "890907489-5", "JFK", "JFK Cooperativa Financiera", "Cooperativa"),
+    (23, "890985032-6", "Fincomercio", "Fincomercio Cooperativa Financiera", "Cooperativa"),
 ]
 
 INITIAL_FUENTES = [
@@ -239,10 +239,10 @@ def _init_schema(conn, cursor):
 
     cursor.execute("SELECT COUNT(*) FROM bancos")
     if cursor.fetchone()[0] == 0:
-        for row_id, nit, nombre, razon in INITIAL_BANCOS:
+        for row_id, nit, nombre, razon, tipo in INITIAL_BANCOS:
             cursor.execute(
-                "INSERT INTO bancos (id, nit, nombre, razon_social) VALUES (?, ?, ?, ?)",
-                (row_id, nit, nombre, razon),
+                "INSERT INTO bancos (id, nit, nombre, razon_social, tipo_entidad) VALUES (?, ?, ?, ?, ?)",
+                (row_id, nit, nombre, razon, tipo),
             )
 
     cursor.execute("SELECT COUNT(*) FROM fuentes")

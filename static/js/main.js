@@ -500,7 +500,7 @@ function renderizarKPIs(tasas, indicadores) {
         ? 'producto cerca del l\u00edmite'
         : 'productos cerca del l\u00edmite';
 
-    const tasasConsumo = tasas.filter(t => t.categoria === 'Consumo');
+    const tasasConsumo = tasas.filter(t => t.categoria === 'Crédito de Consumo' || t.categoria === 'Consumo');
     if (tasasConsumo.length > 0) {
         tasasConsumo.sort((a, b) => a.tasa_ea - b.tasa_ea);
         const mejor = tasasConsumo[0];
