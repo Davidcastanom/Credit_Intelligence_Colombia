@@ -13,16 +13,7 @@ FUENTE_SFC = 1
 EA_MAX_VALIDA = 100.0
 EA_MIN_VALIDA = 0.0
 
-FUENTES_POR_BANCO_NIT = {
-    nit: 1 for nit in [
-        "890903938-8", "860002964-4", "901587541-9", "890981395-1",
-        "860034313-7", "860003020-1", "860007738-9", "890300279-4",
-        "860035827-5", "860007335-4", "860034594-1", "800037800-8",
-        "890903937-0", "900047981-8", "890200756-7", "901659846-8",
-        "901353491-1", "901400002-9", "901097473-5", "890906213-1",
-        "890901176-3", "890907489-5", "890985032-6",
-    ]
-}
+FUENTE_TASAS_BANCARIAS = 1
 
 REQ_HEADERS = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"}
 
@@ -442,11 +433,10 @@ def cargar_tasas_bancarias(df, conexion, fecha_actual):
                 errores.append(f"Producto no encontrado: {row['producto']}")
                 continue
             producto_id = prod_res[0]
-            fuente_id = FUENTES_POR_BANCO_NIT.get(row["nit"], 1)
             cursor.execute(
                 "INSERT INTO tasas (producto_id, tasa_ea, tasa_mv, fuente_id, fecha_actualizacion) VALUES (?, ?, ?, ?, ?) "
-                "ON CONFLICT(producto_id) DO UPDATE SET tasa_ea = excluded.tasa_ea, tasa_mv = excluded.tasa_mv, fecha_actualizacion = excluded.fecha_actualizacion",
-                (producto_id, row["tasa_ea"], row["tasa_mv"], fuente_id, fecha_actual),
+                "ON CONFLICT(producto_id) DO UPDATE SET tasa_ea = excluded.tasa_ea, tasa_mv = excluded.tasa_mv, fuente_id = excluded.fuente_id, fecha_actualizacion = excluded.fecha_actualizacion",
+                (producto_id, row["tasa_ea"], row["tasa_mv"], FUENTE_TASAS_BANCARIAS, fecha_actual),
             )
             cursor.execute(
                 "INSERT OR IGNORE INTO historico_tasas (producto_id, tasa_ea, tasa_mv, fecha_registro) VALUES (?, ?, ?, ?)",

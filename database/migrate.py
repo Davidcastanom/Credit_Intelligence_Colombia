@@ -197,6 +197,32 @@ INITIAL_BANCOS = [
     (23, "890985032-6", "Fincomercio", "Fincomercio Cooperativa Financiera", "Cooperativa"),
 ]
 
+BANCO_URLS = {
+    "890903938-8": "https://www.bancolombia.com",
+    "860002964-4": "https://www.bancodebogota.com",
+    "901587541-9": "https://www.nequi.com.co",
+    "890981395-1": "https://www.confiar.coop",
+    "860034313-7": "https://www.davivienda.com",
+    "860003020-1": "https://www.bbva.com.co",
+    "860007738-9": "https://www.bancopopular.com.co",
+    "890300279-4": "https://www.bancodeoccidente.com.co",
+    "860035827-5": "https://www.avvillas.com.co",
+    "860007335-4": "https://www.bancocajasocial.com",
+    "860034594-1": "https://www.scotiabankcolpatria.com",
+    "800037800-8": "https://www.bancoagrario.gov.co",
+    "890903937-0": "https://www.itau.co",
+    "900047981-8": "https://www.bancofalabella.com.co",
+    "890200756-7": "https://www.bancopichincha.com.co",
+    "901659846-8": "https://nu.com.co",
+    "901353491-1": "https://www.lulobank.com",
+    "901400002-9": "https://www.rappipay.co",
+    "901097473-5": "https://www.uala.com.co",
+    "890906213-1": "https://www.coofinep.com",
+    "890901176-3": "https://www.cotrafa.com.co",
+    "890907489-5": "https://www.jfk.com.co",
+    "890985032-6": "https://www.fincomercio.com",
+}
+
 INITIAL_FUENTES = [
     (1, "Superintendencia Financiera de Colombia", "Oficial", "https://www.superfinanciera.gov.co/"),
     (2, "Datos Abiertos Colombia - SFC", "OpenData", "https://www.datos.gov.co/"),
@@ -241,9 +267,14 @@ def _init_schema(conn, cursor):
     if cursor.fetchone()[0] == 0:
         for row_id, nit, nombre, razon, tipo in INITIAL_BANCOS:
             cursor.execute(
-                "INSERT INTO bancos (id, nit, nombre, razon_social, tipo_entidad) VALUES (?, ?, ?, ?, ?)",
-                (row_id, nit, nombre, razon, tipo),
+                "INSERT INTO bancos (id, nit, nombre, razon_social, url_web, tipo_entidad) VALUES (?, ?, ?, ?, ?, ?)",
+                (row_id, nit, nombre, razon, BANCO_URLS.get(nit, ""), tipo),
             )
+    for nit, url_web in BANCO_URLS.items():
+        cursor.execute(
+            "UPDATE bancos SET url_web = ? WHERE nit = ? AND (url_web IS NULL OR url_web = '')",
+            (url_web, nit),
+        )
 
     cursor.execute("SELECT COUNT(*) FROM fuentes")
     if cursor.fetchone()[0] == 0:
@@ -303,6 +334,27 @@ def ejecutar_migraciones():
             conn.close()
             raise
 
+    # Migration 10: agregar url_web a bancos si no existe
+    try:
+        cursor.execute("SELECT url_web FROM bancos LIMIT 1")
+    except Exception:
+        try:
+            cursor.execute("ALTER TABLE bancos ADD COLUMN url_web TEXT")
+            cursor.execute("INSERT INTO schema_migrations (migration_index) VALUES (10)")
+            print("  [OK] Migración 10: columna url_web agregada a bancos.")
+            ejecutadas += 1
+        except Exception as e:
+            print(f"  [ERROR] Migración 10: {e}")
+            conn.rollback()
+            conn.close()
+            raise
+
+    # Seed URLs for all banks after migration
+    for nit, url_web in BANCO_URLS.items():
+        cursor.execute(
+            "UPDATE bancos SET url_web = ? WHERE nit = ? AND (url_web IS NULL OR url_web = '')",
+            (url_web, nit),
+        )
     conn.commit()
 
     if ejecutadas == 0:

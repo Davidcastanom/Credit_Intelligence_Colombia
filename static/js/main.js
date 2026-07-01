@@ -132,10 +132,18 @@ function filtrarYMostrarTasas() {
             <td>${fila.tasa_mv.toFixed(2)}%</td>
             <td><span class="badge ${badgeClase}">${badgeTexto}</span></td>
             <td>${fila.fecha_actualizacion}</td>
-            <td><a href="${fila.url_fuente}" target="_blank" class="link-fuente">${fila.fuente}</a></td>
+            <td><a href="${fila.url_fuente}" target="_blank" rel="noopener" class="link-fuente">${fila.fuente}</a></td>
+            <td>${renderizarEnlaceBanco(fila)}</td>
         `;
         tbody.appendChild(tr);
     });
+}
+
+function renderizarEnlaceBanco(fila) {
+    if (!fila.url_banco) {
+        return '<span class="text-muted">Sin enlace</span>';
+    }
+    return `<a href="${fila.url_banco}" target="_blank" rel="noopener" class="link-banco">Ver banco</a>`;
 }
 
 function actualizarIndicadoresUsura(indicadores) {
@@ -439,6 +447,7 @@ async function inicializarDashboard() {
         indicadoresUsuraDashboard = indicadoresNorm;
 
         renderizarKPIs(tasas, indicadoresNorm);
+        renderizarCruceFuente(tasas);
         renderizarSyncStatus(syncStatus);
         renderizarAlertas(tasas, indicadoresNorm);
         llenarSelectBancos(tasas);
@@ -486,6 +495,20 @@ function animarContador(el, valorFinal, sufijo) {
         if (t < 1) requestAnimationFrame(paso);
     }
     requestAnimationFrame(paso);
+}
+
+function renderizarCruceFuente(tasas) {
+    const conEnlace = tasas.filter(t => t.url_banco && t.url_banco.trim() !== '').length;
+    const total = tasas.length;
+    const alternativos = tasas.filter(t => t.tipo_entidad === 'Nubanco' || t.tipo_entidad === 'Cooperativa').length;
+
+    const elLink = document.getElementById('source-link-coverage');
+    const elSfc = document.getElementById('source-sfc-count');
+    const elAlt = document.getElementById('source-alt-count');
+
+    if (elLink) animarContador(elLink, conEnlace, '');
+    if (elSfc) animarContador(elSfc, total, '');
+    if (elAlt) animarContador(elAlt, alternativos, '');
 }
 
 function renderizarKPIs(tasas, indicadores) {
@@ -1003,7 +1026,9 @@ function exportarHistorialTasas() {
         { campo: "tipo_entidad", titulo: "Tipo Entidad" },
         { campo: "producto", titulo: "Producto" },
         { campo: "tasa_ea", titulo: "Tasa E.A. (%)" },
-        { campo: "tasa_mv", titulo: "Tasa M.V. (%)" }
+        { campo: "tasa_mv", titulo: "Tasa M.V. (%)" },
+        { campo: "url_banco", titulo: "Enlace Banco" },
+        { campo: "fuente", titulo: "Fuente Dato" }
     ];
     descargarCSV(datos, columnas, "historial_tasas_bancarias");
 }

@@ -21,11 +21,7 @@ DROP TABLE IF EXISTS tasas_historico;
 PRAGMA foreign_keys = ON;
 
 -- Índices para rendimiento y unicidad
-CREATE UNIQUE INDEX IF NOT EXISTS idx_historico_tasas_unique ON historico_tasas(producto_id, fecha_registro);
-CREATE UNIQUE INDEX IF NOT EXISTS idx_historico_indicadores_unique ON historico_indicadores(nombre, fecha_vigencia_inicio, fecha_consulta);
-CREATE INDEX IF NOT EXISTS idx_sync_logs_fecha ON sync_logs(fecha_ejecucion);
-CREATE INDEX IF NOT EXISTS idx_historico_tasas_fecha ON historico_tasas(fecha_registro);
-CREATE INDEX IF NOT EXISTS idx_historico_indicadores_nombre ON historico_indicadores(nombre);
+-- Los indices se crean despues de las tablas.
 
 -- 1. Bancos
 CREATE TABLE bancos (
@@ -117,6 +113,13 @@ CREATE TABLE sync_logs (
     detalles TEXT,
     FOREIGN KEY (fuente_id) REFERENCES fuentes(id) ON DELETE CASCADE
 );
+
+-- Indices para rendimiento y unicidad
+CREATE UNIQUE INDEX IF NOT EXISTS idx_historico_tasas_unique ON historico_tasas(producto_id, fecha_registro);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_historico_indicadores_unique ON historico_indicadores(nombre, fecha_vigencia_inicio, fecha_consulta);
+CREATE INDEX IF NOT EXISTS idx_sync_logs_fecha ON sync_logs(fecha_ejecucion);
+CREATE INDEX IF NOT EXISTS idx_historico_tasas_fecha ON historico_tasas(fecha_registro);
+CREATE INDEX IF NOT EXISTS idx_historico_indicadores_nombre ON historico_indicadores(nombre);
 
 -- ============================================
 -- DATOS SEMILLA (COLOMBIA)

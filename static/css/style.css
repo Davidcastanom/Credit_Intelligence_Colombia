@@ -709,6 +709,38 @@ tr.alerta-preventiva:hover {
     margin-bottom: var(--space-6);
 }
 
+.source-cross-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+}
+
+.source-card {
+    margin-bottom: 0;
+}
+
+.source-card .label {
+    font-size: var(--text-xs);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: var(--space-2);
+    font-weight: 700;
+}
+
+.source-card .value {
+    font-size: var(--text-2xl);
+    font-weight: 800;
+    color: var(--color-primary);
+}
+
+.source-card .desc {
+    font-size: var(--text-xs);
+    color: var(--color-text-disabled);
+    margin-top: var(--space-1);
+}
+
 .stat-card {
     background: linear-gradient(135deg, var(--color-surface) 0%, #fafcff 100%);
     border: 1px solid var(--color-border);

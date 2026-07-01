@@ -18,6 +18,7 @@ def obtener_tasas_comparativa():
             SELECT
                 b.nombre AS banco,
                 b.nit AS nit,
+                b.url_web AS url_banco,
                 b.tipo_entidad AS tipo_entidad,
                 p.nombre AS producto,
                 c.nombre AS categoria,
@@ -66,6 +67,7 @@ def obtener_historial():
         cursor.execute("""
             SELECT
                 b.nombre AS banco,
+                b.url_web AS url_banco,
                 b.tipo_entidad AS tipo_entidad,
                 p.nombre AS producto,
                 h.tasa_ea AS tasa_ea,
