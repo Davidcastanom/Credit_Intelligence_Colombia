@@ -8,6 +8,8 @@ USO:
 FRECUENCIA RECOMENDADA:
     La SFC publica el certificado de tasas de interés mensualmente,
     generalmente durante la primera semana de cada mes.
+
+
     Se recomienda ejecutar este script apenas se publique el nuevo certificado.
 
 PROGRAMACIÓN AUTOMÁTICA:
@@ -46,6 +48,10 @@ EXIT CODES:
 """
 import sys
 import os
+# Forzar UTF-8 en stdout/stderr (Windows cp1252)
+if sys.platform == "win32" and hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+    sys.stderr.reconfigure(encoding="utf-8")
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
