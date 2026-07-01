@@ -199,30 +199,7 @@ INITIAL_BANCOS = [
 
 INITIAL_FUENTES = [
     (1, "Superintendencia Financiera de Colombia", "Oficial", "https://www.superfinanciera.gov.co/"),
-    (2, "Bancolombia - Web Oficial", "Website", "https://www.bancolombia.com/"),
-    (3, "Banco de Bogotá - Web Oficial", "Website", "https://www.bancodebogota.com/"),
-    (4, "Nequi - Web Oficial", "Website", "https://nequi.com/"),
-    (5, "Confiar - Web Oficial", "Website", "https://www.confiar.coop/"),
-    (6, "Davivienda - Web Oficial", "Website", "https://www.davivienda.com/"),
-    (7, "BBVA - Web Oficial", "Website", "https://www.bbva.com.co/"),
-    (8, "Banco Popular - Web Oficial", "Website", "https://www.bancopopular.com.co/"),
-    (9, "Banco de Occidente - Web Oficial", "Website", "https://www.bancodeoccidente.com/"),
-    (10, "AV Villas - Web Oficial", "Website", "https://www.avvillas.com.co/"),
-    (11, "Banco Caja Social - Web Oficial", "Website", "https://www.bancocajasocial.com/"),
-    (12, "Scotiabank Colpatria - Web Oficial", "Website", "https://www.scotiabankcolpatria.com/"),
-    (13, "Banco Agrario - Web Oficial", "Website", "https://www.bancoagrario.gov.co/"),
-    (14, "Itaú - Web Oficial", "Website", "https://www.itau.com.co/"),
-    (15, "Falabella - Web Oficial", "Website", "https://www.bancofalabella.com.co/"),
-    (16, "Pichincha - Web Oficial", "Website", "https://www.pichincha.com.co/"),
-    (17, "Nu Colombia - Web Oficial", "Website", "https://nu.com.co/"),
-    (18, "Lulo Bank - Web Oficial", "Website", "https://www.lulobank.com.co/"),
-    (19, "RappiPay - Web Oficial", "Website", "https://www.rappipay.com.co/"),
-    (20, "Uala - Web Oficial", "Website", "https://www.uala.com.co/"),
-    (21, "Coofinep - Web Oficial", "Website", "https://www.coofinep.com/"),
-    (22, "Cotrafa - Web Oficial", "Website", "https://www.cotrafa.com.co/"),
-    (23, "JFK - Web Oficial", "Website", "https://www.jfk.com.co/"),
-    (24, "Fincomercio - Web Oficial", "Website", "https://www.fincomercio.com/"),
-    (25, "Datos Abiertos Colombia - SFC", "OpenData", "https://www.datos.gov.co/"),
+    (2, "Datos Abiertos Colombia - SFC", "OpenData", "https://www.datos.gov.co/"),
 ]
 
 INITIAL_CATEGORIAS = [
