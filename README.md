@@ -8,16 +8,17 @@ Sistema de consulta, comparación, simulación y seguimiento de tasas de interé
 
 ## Características
 
-- **Comparador de tasas** — Explora y filtra las tasas de más de 20 entidades financieras (bancos tradicionales, nubancos, cooperativas). Incluye tooltips informativos, columna de **Riesgo Usura** y toggle para mostrar/ocultar columnas.
-- **Calculadora de crédito (sistema francés)** — Simula cuotas fijas mensuales con tabla de amortización completa. Descarga CSV con resumen del crédito + desglose mes a mes. Alerta si la tasa supera o se acerca al límite de usura.
-- **Dashboard estadístico** — KPIs con contadores animados, gráfico de barras con gradientes y línea de usura, evolución histórica por banco, histórico de usura por modalidad, y tabla de alertas activas (críticas en rojo, preventivas en naranja).
-- **Alertas de usura** — Detecta automáticamente los productos cuya tasa está a menos de 1 % (crítica) o menos de 3 % (preventiva) del techo legal.
-- **Inicio educativo** — Explica qué es la usura, cómo se calcula, para quién es la herramienta, casos de uso prácticos y preguntas frecuentes con acordeón interactivo.
-- **Inicio de sesión con Google** — Opcional. Activado con la variable `GOOGLE_CLIENT_ID`. Oculta completamente la interfaz de login si no está configurada.
-- **Panel administrativo** — Protegido con contraseña (`ADMIN_PASSWORD`). Permite editar tasas de usura, gestionar usuarios, ver logs de sincronización y enviar notificaciones.
-- **ETL automatizado** — Extrae tasas bancarias e indicadores de usura desde la API de datos.gov.co (Socrata). Sin fallback: si la API falla, el pipeline se detiene. Validación estricta con detección de anomalías.
-- **Exportación CSV** — Compatible con Excel (locale español: separador `;`, decimal `,`). Descarga simulaciones con resumen completo y tablas de amortización. Descarga históricos de tasas y usura desde el dashboard.
-- **Diseño responsive** — Menú hamburguesa en mobile, tablas adaptativas (ocultan columnas secundarias), KPIs en grilla de 2 columnas, gráficos compactos.
+- **Comparador de tasas** — Explora y filtra las tasas de 23 entidades financieras (bancos tradicionales, nubancos, cooperativas). Incluye tooltips, columna de **Riesgo Usura** y toggle de columnas.
+- **Calculadora de crédito (sistema francés)** — Simula cuotas fijas con tabla de amortización completa. Descarga CSV compatible con Excel. Alerta si la tasa supera el límite de usura.
+- **Dashboard estadístico** — KPIs (mejor tasa consumo, promedio mercado), gráfico de barras por entidad (coloreado por tipo), evolución histórica por banco, histórico de usura por modalidad y tabla de alertas activas.
+- **Alertas de usura** — Detecta productos con tasa a menos de 1% (crítica) o 3% (preventiva) del techo legal.
+- **Inicio educativo** — Explica qué es la usura, cómo se calcula, para quién es la herramienta, casos de uso y FAQ.
+- **Inicio de sesión con Google** — Opcional (`GOOGLE_CLIENT_ID`). Se oculta si no está configurado.
+- **Panel administrativo** — Protegido con `ADMIN_PASSWORD`. Editar tasas de usura, gestionar usuarios y ver logs de sincronización.
+- **Auto-ETL al iniciar** — Al desplegar en Render, la app ejecuta migraciones + extracción desde datos.gov.co automáticamente sin intervención manual.
+- **Actualización mensual** — GitHub Actions dispara un **Deploy Hook** de Render el día 1 de cada mes, forzando redeploy con ETL automático.
+- **Exportación CSV** — Compatible con Excel (locale español: separador `;`, decimal `,`).
+- **Diseño responsive** — Menú hamburguesa, tablas adaptativas, KPIs en grilla 2 columnas, gráficos compactos.
 
 ---
 
@@ -29,8 +30,8 @@ Sistema de consulta, comparación, simulación y seguimiento de tasas de interé
 | Frontend | HTML + CSS vanilla + JavaScript, Chart.js |
 | ETL | Pandas, Requests (Socrata API), validación estadística |
 | Auth | Google OAuth 2.0 (opcional) |
-| Despliegue | Render (free tier), Gunicorn |
-| CI/CD | GitHub Actions (cron mensual) |
+| Despliegue | Render (free tier), Gunicorn, auto-ETL al iniciar |
+| CI/CD | GitHub Actions → Deploy Hook → Render redeploy |
 
 ---
 
@@ -99,15 +100,15 @@ python scripts/test_integridad.py
 ## Estructura del proyecto
 
 ```
-├── app.py                         # Servidor Flask + API REST + admin + OAuth
-├── Procfile                       # gunicorn para Render
+├── app.py                         # Servidor Flask + API REST + admin + OAuth + auto-ETL
+├── Procfile                       # gunicorn app:app (Render)
 ├── requirements.txt               # Dependencias
 ├── .env.example                   # Plantilla de variables de entorno
 ├── database/
-│   ├── db_adapter.py              # Adapter PostgreSQL/SQLite automático
+│   ├── db_adapter.py              # Adapter PostgreSQL vía psycopg2 (DATABASE_URL) / SQLite fallback
 │   ├── db.py                      # Consultas a la BD (usa db_adapter)
-│   ├── migrate.py                 # Migraciones automáticas (10 versiones)
-│   └── etl_scraper.py             # Pipeline ETL con Socrata API + validación
+│   ├── migrate.py                 # Migraciones: INITIAL_SCHEMA para PG + datos semilla
+│   └── etl_scraper.py             # Pipeline ETL con Socrata API + validación estadística
 ├── scripts/
 │   ├── run_etl.py                 # CLI para ejecutar ETL manual
 │   └── test_integridad.py         # Suite de pruebas de integridad (27 tests)
@@ -139,11 +140,11 @@ python scripts/test_integridad.py
 
 ### Fuente de datos
 
-**100% datos abiertos del gobierno colombiano** — sin scraping PDF, sin fallback.
+**100% datos abiertos del gobierno colombiano** — sin scraping PDF, sin fallback. Las tasas provienen de la [Superintendencia Financiera de Colombia](https://www.superfinanciera.gov.co/) a través de [datos.gov.co](https://www.datos.gov.co/).
 
-| Dataset | API | Contenido |
-|---------|-----|-----------|
-| Tasas bancarias | `w9zh-vetq` | Tasas de interés promedio por entidad y producto |
+| Dataset | ID API Socrata | Contenido |
+|---------|----------------|-----------|
+| Tasas bancarias | `w9zh-vetq` | Tasas de interés promedio por entidad y producto (16 bancos, ~52 productos) |
 | TIBC | `pare-7x5i` | Tasas de Interés Bancario Corriente por modalidad |
 | Usura | derivado | Usura = TIBC × 1.5 (por ley) |
 
@@ -172,16 +173,18 @@ python scripts/run_etl.py
 
 ### Automatización
 
-**GitHub Actions** (`.github/workflows/etl.yml`):
+**GitHub Actions + Render Deploy Hook** (`.github/workflows/etl.yml`):
 ```yaml
 schedule:
   - cron: '0 10 1 * *'   # Día 1 de cada mes, 10:00 UTC
 workflow_dispatch:         # También ejecución manual desde Actions
 ```
 
-Requiere el secreto `DATABASE_URL` configurado en GitHub → Settings → Secrets and variables → Actions.
+El workflow llama al **Deploy Hook** de Render (`api.render.com/deploy/...`), lo que dispara un redeploy. Al reiniciar la app, el **auto-ETL** se ejecuta automáticamente (si el último sync tiene más de 1 día).
 
-**Linux (cron):**
+No se necesita configurar `DATABASE_URL` en GitHub — el pipeline nunca conecta a la BD directamente (Render free tier bloquea conexiones externas a PostgreSQL).
+
+**Linux (cron alternativo):**
 ```cron
 0 10 1 * * cd /ruta/proyecto && DATABASE_URL="postgresql://..." python scripts/run_etl.py >> logs/etl.log 2>&1
 ```
@@ -205,28 +208,30 @@ El adapter `Conexion()` detecta automáticamente el motor según la variable `DA
 | Definida | PostgreSQL (`psycopg2`) |
 | Ausente | SQLite local (`database/tasas.db`) |
 
-Todas las consultas SQL se traducen automáticamente: `?` → `%s`, `INSERT OR IGNORE` → `ON CONFLICT DO NOTHING`, `INTEGER PRIMARY KEY AUTOINCREMENT` → `SERIAL PRIMARY KEY`, etc.
+Todas las consultas SQL se traducen automáticamente: `?` → `%s`, `INSERT OR IGNORE` → `ON CONFLICT DO NOTHING` (solo para `INSERT ... VALUES`, no para `INSERT ... SELECT`), `INTEGER PRIMARY KEY AUTOINCREMENT` → `SERIAL PRIMARY KEY`, etc.
 
 ### Tablas
 
 | Tabla | Propósito |
 |-------|-----------|
-| `bancos` | Entidades financieras (23 registros) |
+| `bancos` | Entidades financieras (23 registros) con tipo_entidad (tradicional, nubanco, cooperativa) |
 | `categorias_credito` | Modalidades de crédito SFC (12 registros) |
-| `fuentes` | Fuentes oficiales de cada entidad |
+| `fuentes` | Fuentes oficiales (2 registros: SFC, Datos Abiertos) |
 | `productos` | Productos financieros por banco (52 registros) |
 | `tasas` | Tasas vigentes (1 por producto) |
 | `historico_tasas` | Historial de tasas bancarias con fecha |
 | `indicadores` | Tasas de usura e indicadores vigentes (10: 9 usura + DTF) |
 | `historico_indicadores` | Historial de usura con fecha de consulta |
 | `sync_logs` | Registro de ejecuciones ETL |
-| `schema_migrations` | Control de versiones del esquema (10 migraciones) |
+| `schema_migrations` | Control de versiones del esquema (INITIAL_SCHEMA para PostgreSQL + migraciones progresivas) |
 | `usuarios` | Usuarios registrados vía Google OAuth |
 | `notificaciones` | Notificaciones enviadas a usuarios |
 
 ---
 
 ## Despliegue en Render
+
+> **Importante:** Render free tier PostgreSQL solo acepta conexiones internas (no expone puerto externo). El ETL se ejecuta automáticamente al iniciar la app, no desde GitHub Actions ni desde tu máquina local.
 
 ### 1. Crear servicio Web
 
@@ -235,7 +240,9 @@ Todas las consultas SQL se traducen automáticamente: `?` → `%s`, `INSERT OR I
 
 ### 2. Crear base de datos PostgreSQL
 
-Desde el Dashboard de Render: New → PostgreSQL. Se crea automáticamente la variable `DATABASE_URL` en el servicio web vinculado.
+Desde el Dashboard de Render: New → PostgreSQL. Luego ve a tu Web Service → Environment → **link to PostgreSQL**.
+
+Esto inyecta automáticamente la variable `DATABASE_URL` con la URL de conexión interna.
 
 ### 3. Variables de entorno
 
@@ -247,23 +254,26 @@ Desde el Dashboard de Render: New → PostgreSQL. Se crea automáticamente la va
 | `GOOGLE_CLIENT_ID` | (Opcional) Para login con Google |
 | `GOOGLE_CLIENT_SECRET` | (Opcional) Para login con Google |
 
-### 4. Ejecutar ETL inicial
+### 4. Auto-ETL al iniciar
 
-```bash
-# Desde Render Shell
-python scripts/run_etl.py
-```
+No requiere acción manual. Al hacer deploy, la app ejecuta automáticamente:
+1. Migraciones de esquema (crea tablas si no existen)
+2. Poblado inicial (bancos, categorías, fuentes)
+3. ETL desde datos.gov.co — consulta tasas bancarias e indicadores de usura
+
+El ETL solo corre si la BD está vacía o el último sync tiene más de 1 día.
 
 ### 5. Programar ETL automático
 
-Agregar el secreto `DATABASE_URL` en GitHub:
+1. Obtén el **Deploy Hook** de Render: Dashboard → `credit-intelligence-colombia-1` → Settings → Deploy Hook → copiar URL
+2. Agrega el secreto en GitHub:
 ```
 Settings → Secrets and variables → Actions → New repository secret
-Name: DATABASE_URL
-Value: postgresql://user:pass@host:5432/db
+Name: RENDER_DEPLOY_HOOK
+Value: https://api.render.com/deploy/srv-xxx?key=yyy
 ```
 
-El workflow de GitHub Actions lo ejecutará el día 1 de cada mes.
+El workflow de GitHub Actions llamará al hook el día 1 de cada mes.
 
 ---
 
@@ -311,6 +321,17 @@ python scripts_admin/ver_datos.py       # Ver contenido de tablas
 
 ---
 
+## Atribución de datos
+
+Las tasas de interés mostradas provienen de la **Superintendencia Financiera de Colombia (SFC)** a través del portal de datos abiertos [datos.gov.co](https://www.datos.gov.co/). Los datasets utilizados son:
+
+- [Tasas de interés promedio por entidad y producto](https://www.datos.gov.co/Econom-a-y-Finanzas/Tasas-de-inter-s-promedio-por-entidad-y-producto/w9zh-vetq) (`w9zh-vetq`)
+- [Certificado de Tasas de Interés Bancario Corriente](https://www.datos.gov.co/Econom-a-y-Finanzas/Certificado-de-Tasas-de-Inter-s-Bancario-Corriente/pare-7x5i) (`pare-7x5i`)
+
+La tasa de usura se calcula como **TIBC × 1.5** conforme a la normativa colombiana.
+
+> **Importante:** Verifique siempre la tasa contratada directamente con su entidad financiera. Este sitio ofrece datos de referencia con fines ilustrativos y analíticos, no constituye asesoría financiera.
+
 ## Licencia
 
-Datos de tasas con fines ilustrativos y analíticos. Fuente oficial: [Superintendencia Financiera de Colombia](https://www.datos.gov.co/Econom-a-y-Finanzas/Certificado-de-Tasas-de-Inter-s-Bancario-Corriente/pare-7x5i) y [datos.gov.co](https://www.datos.gov.co/Econom-a-y-Finanzas/Tasas-de-inter-s-promedio-por-entidad-y-producto/w9zh-vetq).
+Datos de tasas con fines ilustrativos y analíticos.
