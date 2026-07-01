@@ -14,6 +14,13 @@ Thumbs.db
 desktop.ini
 .DS_Store
 
+# Archivos de estructura/documentos generados
+estructura.txt
+
+# Logs
+logs/
+*.log
+
 # Python compilado
 __pycache__/
 *.pyc

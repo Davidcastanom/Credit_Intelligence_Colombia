@@ -12,3 +12,6 @@ beautifulsoup4>=4.12.0
 pdfplumber>=0.11.0
 google-auth>=2.30.0
 gunicorn>=20.1.0
+# PostgreSQL adapter — instalar con: pip install psycopg2-binary
+# En producción (Render), Render ya tiene psycopg2 en el sistema; usar psycopg2-binary para dev
+psycopg2-binary>=2.9.10
